@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linux Drill Lab — 20 operator scenarios (RH124 / RH134 scope)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16202A;
+  --ink-2:#41505C;
+  --paper:#F1F2ED;
+  --panel:#FFFFFF;
+  --rule:#C8CDC6;
+  --pine:#2E6B54;
+  --ochre:#8A6A12;
+  --signal:#2C4B8F;
+  --term:#1B2731;
+  --term-fg:#DCE3E7;
+  --radius:3px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.55;
+}
+code,kbd,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+a{color:var(--signal)}
+h1,h2,h3,h4{line-height:1.2;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+header.top{border-bottom:2px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20}
+.topgrid{display:flex;align-items:baseline;gap:24px;flex-wrap:wrap;padding:14px 0 10px}
+.topgrid h1{font-size:20px;font-weight:600;letter-spacing:-0.01em}
+.topgrid .sub{color:var(--ink-2);font-size:14px}
+.meter{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
+.bar{width:170px;height:8px;background:#D8DCD6;border:1px solid var(--rule);border-radius:99px;overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--pine);width:0%}
+nav.tabs{display:flex;gap:0;border-top:1px solid var(--rule)}
+nav.tabs button{
+  appearance:none;background:none;border:0;border-bottom:3px solid transparent;
+  padding:9px 14px;font:inherit;font-size:14px;color:var(--ink-2);cursor:pointer;
+}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+nav.tabs button:focus-visible{outline:2px solid var(--signal);outline-offset:-2px}
+
+main{padding:26px 0 90px}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:34px;align-items:start}
+aside{position:sticky;top:104px;max-height:calc(100vh - 130px);overflow:auto;border-right:1px solid var(--rule);padding-right:14px}
+aside h3{font-size:12px;font-weight:600;color:var(--ink-2);margin:14px 0 6px}
+aside ol{list-style:none;margin:0;padding:0}
+aside li a{
+  display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;
+  padding:5px 6px;text-decoration:none;color:var(--ink);font-size:13.5px;border-radius:var(--radius);
+}
+aside li a:hover{background:#E3E6E0}
+aside li a .n{color:var(--ink-2);font-size:12px}
+aside li a.done{color:var(--pine)}
+.pct{font-size:11px;color:var(--ink-2)}
+
+.sc{background:var(--panel);border:1px solid var(--rule);border-left:4px solid var(--ink);margin-bottom:28px;padding:20px 22px 6px}
+.sc.level-Hard{border-left-color:var(--ochre)}
+.sc.level-Capstone{border-left-color:var(--pine)}
+.sc > h2{font-size:21px;font-weight:600;letter-spacing:-0.01em}
+.role{color:var(--ink-2);font-size:14px;margin:3px 0 12px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:7px 0;margin-bottom:14px}
+.facts b{font-weight:600;color:var(--ink)}
+.brief{font-size:15.5px;max-width:76ch;margin:0 0 14px}
+h4.sec{font-size:13px;font-weight:600;margin:18px 0 7px;color:var(--ink)}
+pre.term{background:var(--term);color:var(--term-fg);padding:11px 13px;border-radius:var(--radius);overflow:auto;font-size:13px;line-height:1.5;margin:0 0 10px;white-space:pre-wrap;word-break:break-word}
+pre.term .c{color:#9BB3A6}
+
+ol.tasks{list-style:none;counter-reset:t;margin:0;padding:0}
+ol.tasks > li{counter-increment:t;border-top:1px solid var(--rule);padding:12px 0 12px 0;display:grid;grid-template-columns:26px 1fr;gap:10px}
+ol.tasks > li:first-child{border-top:2px solid var(--ink)}
+ol.tasks input[type=checkbox]{width:17px;height:17px;margin-top:3px;accent-color:var(--pine)}
+.tbody .q{font-size:15px;max-width:80ch}
+.tbody .q:before{content:counter(t) ". ";color:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:13px}
+.tbody.done .q{color:var(--ink-2)}
+details{margin-top:8px}
+details > summary{
+  cursor:pointer;display:inline-block;font-size:12.5px;color:var(--ochre);
+  border:1px solid var(--ochre);border-radius:var(--radius);padding:2px 9px;margin-right:6px;
+  list-style:none;
+}
+details > summary::-webkit-details-marker{display:none}
+details[open] > summary{background:var(--ochre);color:#fff}
+details.sol > summary{border-color:var(--ink);color:var(--ink)}
+details.sol[open] > summary{background:var(--ink);color:#fff}
+details > div{margin-top:8px}
+.hintbox{font-size:14px;border-left:2px solid var(--rule);padding-left:10px;color:var(--ink-2);max-width:78ch}
+.check{font-size:13px;color:var(--pine);margin-top:2px}
+.check b{font-weight:600}
+
+table.distro{border-collapse:collapse;width:100%;font-size:13.5px;margin-bottom:8px}
+table.distro th,table.distro td{border-bottom:1px solid var(--rule);text-align:left;padding:6px 10px 6px 0;vertical-align:top}
+table.distro th{width:130px;font-weight:600;white-space:nowrap}
+.practice{font-size:14px;background:#E9EEE9;border-left:3px solid var(--pine);padding:9px 12px;max-width:82ch}
+ul.docs{margin:6px 0 16px;padding-left:18px;font-size:13.5px;color:var(--ink-2)}
+ul.docs li{margin:2px 0}
+
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.day{background:var(--panel);border:1px solid var(--rule);border-top:3px solid var(--ink);padding:14px}
+.day h3{font-size:15px;margin-bottom:2px}
+.day p{font-size:13px;color:var(--ink-2);margin:2px 0 8px}
+.day ul{margin:0;padding-left:16px;font-size:13.5px}
+.idx{column-count:2;column-gap:30px;font-size:13.5px}
+.idx dt{font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:13px;margin-top:9px}
+.idx dd{margin:0 0 2px 0;color:var(--ink-2)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 22px}
+.tools button{font:inherit;font-size:13px;padding:5px 11px;background:var(--panel);border:1px solid var(--ink);border-radius:var(--radius);cursor:pointer}
+.tools button:hover{background:var(--ink);color:#fff}
+.note{font-size:14px;max-width:80ch;color:var(--ink-2)}
+[hidden]{display:none !important}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  aside{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule);padding-bottom:10px}
+  .idx{column-count:1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="topgrid">
+      <h1>Linux Drill Lab</h1>
+      <span class="sub">20 operator scenarios · RH124 + RH134 scope · RHEL 10 primary, RHEL 9 / Fedora / Ubuntu deltas</span>
+      <div class="meter"><span id="pcttext">0 of 0 steps</span><span class="bar"><i id="pctbar"></i></span></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tab-scenarios" aria-selected="true" data-view="scenarios">Scenarios</button>
+      <button role="tab" id="tab-plan" aria-selected="false" data-view="plan">5-day plan</button>
+      <button role="tab" id="tab-index" aria-selected="false" data-view="index">Command index</button>
+      <button role="tab" id="tab-lab" aria-selected="false" data-view="lab">Lab setup</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <section id="view-scenarios">
+    <div class="layout">
+      <aside><h3>Scenarios</h3><ol id="toc"></ol>
+        <div class="tools" style="margin-top:14px">
+          <button id="exportBtn">Export progress</button>
+          <button id="resetBtn">Reset all</button>
+        </div>
+      </aside>
+      <div id="scenarios"></div>
+    </div>
+  </section>
+  <section id="view-plan" hidden></section>
+  <section id="view-index" hidden></section>
+  <section id="view-lab" hidden></section>
+</main>
+<script>
+const SCENARIOS = [
+{
+  id:"s01", level:"Warm-up", mins:45, map:"RH124 ch1-5, ch16",
+  title:"Take over an undocumented server",
+  role:"You joined the platform team. A host was handed over with no runbook. Before anyone touches it, produce a baseline fact sheet.",
+  brief:"Everything an operator does later depends on knowing the machine. This drill is about extracting facts non-destructively, redirecting them into a report, and finding answers from the machine itself instead of a search engine.",
+  setup:["# nothing to break - run this on any VM","sudo -v"],
+  tasks:[
+    {q:"Create /var/tmp/baseline as a working directory that only you can enter, and make every file you create inside it default to rw for you and r for your group.",
+     hint:"Directory needs 0700. The default for new files is controlled by umask in this shell, not by chmod on the directory.",
+     sol:["install -d -m 0700 /var/tmp/baseline","cd /var/tmp/baseline","umask 0137   # new files -> 0640, new dirs -> 0640&0777","umask         # confirm"],
+     check:"stat -c '%a %U' /var/tmp/baseline  ->  700 <you>"},
+    {q:"Write a single report file recording: OS release and version, kernel, architecture, hostname, boot time, timezone and whether NTP is synchronised.",
+     hint:"hostnamectl and timedatectl each print several of these in one shot. Use a here-document or append with >> to build one file.",
+     sol:["{ echo '== identity =='; hostnamectl","  echo; echo '== time =='; timedatectl","  echo; echo '== kernel =='; uname -a","  echo; echo '== release =='; cat /etc/os-release","  echo; echo '== uptime =='; uptime -p; uptime -s","} > 01-identity.txt","less 01-identity.txt"],
+     check:"grep -c . 01-identity.txt returns a non-zero count"},
+    {q:"Record CPU, memory, block devices with filesystem type and UUID, and mounted filesystem usage in human units.",
+     hint:"lsblk has an -f mode that prints FSTYPE, UUID and MOUNTPOINT together. df needs -T to print the type.",
+     sol:["{ lscpu | head -n 20","  echo; free -h","  echo; lsblk -f","  echo; df -hT -x tmpfs -x devtmpfs","  echo; swapon --show","} > 02-hardware.txt"],
+     check:"grep -E 'xfs|ext4|btrfs' 02-hardware.txt"},
+    {q:"Record the network picture: interface names and addresses in one-line form, the default route, DNS resolvers in effect, and every listening TCP/UDP socket with the owning process.",
+     hint:"ip has a -br (brief) output mode. Socket listing needs root to show process names.",
+     sol:["{ ip -br addr; echo; ip route show","  echo; resolvectl status 2>/dev/null || cat /etc/resolv.conf","  echo; sudo ss -tulpn","} > 03-network.txt"],
+     check:"ss -tulpn | grep -q ':22' on any box with sshd running"},
+    {q:"Record service state: everything enabled at boot, everything currently failed, and the five units that took longest to start.",
+     hint:"systemd-analyze blame sorts unit start times. Filter enabled units with the --state flag of list-unit-files.",
+     sol:["{ systemctl list-unit-files --state=enabled --no-pager","  echo; systemctl --failed --no-pager","  echo; systemd-analyze blame | head -n 5","  echo; systemd-analyze critical-chain","} > 04-services.txt"],
+     check:"systemctl --failed shows 0 loaded units listed on a healthy box"},
+    {q:"Without opening a browser, find out which manual page documents the file format of /etc/fstab, and extract only the section that lists mount options.",
+     hint:"Search the manual database by keyword; section 5 is file formats. man can be piped.",
+     sol:["man -k fstab            # or: apropos fstab","man 5 fstab | sed -n '/The fourth field/,/The fifth field/p'","# if man -k returns nothing:","sudo mandb"],
+     check:"You can state what field 4 and field 6 of /etc/fstab control"},
+    {q:"Package the whole report directory into a timestamped compressed archive in /var/tmp, owned by you, then verify the archive contents without extracting it.",
+     hint:"Use command substitution with date +%F for the name. tar can list an archive with -t.",
+     sol:["cd /var/tmp","tar -czf baseline-$(hostname -s)-$(date +%F).tar.gz baseline/","tar -tzvf baseline-$(hostname -s)-$(date +%F).tar.gz","ls -lh baseline-*.tar.gz"],
+     check:"tar -tzf ... lists 4 txt files"}
+  ],
+  distro:[
+    ["RHEL 10","hostnamectl, timedatectl and lsblk -f behave as shown. /etc/os-release is the only supported release file; there is no lsb_release by default."],
+    ["RHEL 9","Identical. Difference appears later, in networking and firewall drills, not here."],
+    ["Fedora 42","Same tools. systemd-analyze output is usually much shorter because the desktop spawns fewer system units than a server profile."],
+    ["Ubuntu 24.04","ss, ip, lsblk, systemd-analyze identical. DNS is resolved by systemd-resolved so /etc/resolv.conf is a symlink to a stub - always read resolvectl status instead."]
+  ],
+  practice:"Every incident review starts with 'what was the state of the box'. Teams that run a baseline capture on handover (and store it in git) resolve incidents far faster than teams that reconstruct facts under pressure. This is what tools like sos report automate - run sudo sos report on RHEL once to see the same idea at industrial scale.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Configuring system locale, keyboard, time","man 5 os-release, man 1 hostnamectl, man 8 ss, man 1 systemd-analyze","man 5 fstab, man 1 tar"]
+},
+{
+  id:"s02", level:"Core", mins:60, map:"RH124 ch3, ch13, ch15",
+  title:"Reclaim a release directory that grew out of control",
+  role:"A build server has filled its data volume. An application team dumped releases, logs and backups into one tree with inconsistent ownership. Nothing may be deleted without an inventory.",
+  brief:"This is the classic disk-full page. It drills path handling, find with real predicates, hard links versus symlinks, safe deletion of filenames containing spaces, and archive extraction that preserves ownership.",
+  setup:["sudo install -d -m 0755 /srv/releases","cd /srv/releases","sudo mkdir -p app-{1.0,1.1,1.2}/{bin,conf,logs} archive shared","sudo bash -c 'for v in 1.0 1.1 1.2; do head -c 20M </dev/urandom > app-$v/app.jar; done'","sudo bash -c 'for v in 1.0 1.1 1.2; do for i in 1 2 3; do head -c 3M </dev/urandom > app-$v/logs/app-$i.log; done; done'","sudo touch -d '400 days ago' app-1.0/app.jar app-1.0/logs/*","sudo bash -c 'touch \"/srv/releases/shared/old report (final).txt\"'","sudo chown -R nobody:nobody app-1.0"],
+  tasks:[
+    {q:"Report disk usage for /srv/releases: total size of the tree, then the size of each immediate subdirectory, largest first.",
+     hint:"du summarises; -s stops at one level, --max-depth=1 gives you each child. Sorting needs machine-readable sizes.",
+     sol:["df -hT /srv","sudo du -sh /srv/releases","sudo du -h --max-depth=1 /srv/releases | sort -hr"],
+     check:"You can name the largest subdirectory in one line of output"},
+    {q:"List the ten largest regular files anywhere under the tree, with size and owner, without following symlinks.",
+     hint:"find -type f then delegate formatting to -printf, or pipe null-separated names into du. Sorting by human sizes needs sort -h.",
+     sol:["sudo find /srv/releases -type f -printf '%s %u %p\\n' | sort -nr | head -10","# human readable variant:","sudo find /srv/releases -type f -printf '%k KiB %u %p\\n' | sort -nr | head -10"],
+     check:"Output includes the three app.jar files"},
+    {q:"Find every file not modified in the last 180 days AND larger than 10 MiB, and write the list to /var/tmp/stale.txt using a null-safe format.",
+     hint:"-mtime works in days, -size accepts M suffix. Null-separated output is -print0; write both a readable list and a machine list.",
+     sol:["sudo find /srv/releases -type f -mtime +180 -size +10M -printf '%TY-%Tm-%Td %10s %p\\n' | tee /var/tmp/stale.txt","sudo find /srv/releases -type f -mtime +180 -size +10M -print0 > /var/tmp/stale.nul"],
+     check:"grep -c . /var/tmp/stale.txt is at least 1 and lists only app-1.0 content"},
+    {q:"Archive everything on that stale list into /srv/releases/archive/stale-<date>.tar.gz, preserving ownership and permissions, then confirm the archive is readable before any deletion happens.",
+     hint:"tar can read a null-separated file list. Ownership preservation on extraction requires root and the right flag.",
+     sol:["sudo tar --null -czf /srv/releases/archive/stale-$(date +%F).tar.gz --files-from=/var/tmp/stale.nul","sudo tar -tzvf /srv/releases/archive/stale-$(date +%F).tar.gz | head","# integrity test:","sudo gzip -t /srv/releases/archive/stale-$(date +%F).tar.gz && echo ARCHIVE OK"],
+     check:"gzip -t exits 0 and the listing shows the app-1.0 paths"},
+    {q:"Delete the archived files - safely. The list may contain names with spaces and parentheses.",
+     hint:"Never pipe plain filenames into rm. Either use the null list with xargs -0, or let find run the deletion itself.",
+     sol:["xargs -0 -a /var/tmp/stale.nul sudo rm -f --","# equivalent, single pass:","sudo find /srv/releases -type f -mtime +180 -size +10M -delete","sudo du -sh /srv/releases"],
+     check:"find ... -mtime +180 -size +10M now prints nothing"},
+    {q:"The current release must be reachable at a stable path /srv/releases/current that points at app-1.2, and conf/app.conf must appear inside both app-1.1 and app-1.2 as the same inode so that editing one edits the other.",
+     hint:"One of these is a symbolic link (crosses directories, can dangle). The other is a hard link (same inode, same filesystem only). Prove the inode with ls -i.",
+     sol:["sudo bash -c 'echo mode=prod > /srv/releases/app-1.2/conf/app.conf'","sudo ln -sfn /srv/releases/app-1.2 /srv/releases/current","sudo ln /srv/releases/app-1.2/conf/app.conf /srv/releases/app-1.1/conf/app.conf","ls -li /srv/releases/app-1.*/conf/app.conf","ls -l /srv/releases/current","stat -c '%h links, inode %i' /srv/releases/app-1.2/conf/app.conf"],
+     check:"Both conf files show the same inode number and a link count of 2"},
+    {q:"Copy the whole tree to /srv/backup preserving permissions, ownership, timestamps, symlinks and ACLs - and prove that a second run copies nothing.",
+     hint:"cp -a or rsync -a; the extended attribute and ACL flags are separate. Idempotency is what you are proving.",
+     sol:["sudo rsync -aAX --info=stats2 /srv/releases/ /srv/backup/","sudo rsync -aAX --info=stats2 /srv/releases/ /srv/backup/   # second run: 0 transferred","sudo diff -r --no-dereference /srv/releases /srv/backup && echo IDENTICAL"],
+     check:"The second rsync reports 0 files transferred"}
+  ],
+  distro:[
+    ["RHEL 10","XFS is the default filesystem. XFS cannot be shrunk, only grown - that constraint shapes every capacity decision you make later in the LVM drill."],
+    ["RHEL 9","Same. RHEL 10 removed support for the old XFS v4 on-disk format, so a filesystem created on RHEL 7 or earlier may refuse to mount on RHEL 10."],
+    ["Fedora 42","Default filesystem is Btrfs on Workstation, so df and du can disagree with each other because of compression and subvolumes. Check with findmnt -t btrfs."],
+    ["Ubuntu 24.04","ext4 by default; find, du, rsync identical. rsync -X (xattrs) needs the filesystem mounted with user_xattr, which is the default on ext4."]
+  ],
+  practice:"Archive before delete, list before archive, and never build a deletion pipeline out of newline-separated filenames. The find -print0 / xargs -0 pair exists precisely because one filename with a space has destroyed production more than once.",
+  docs:["Red Hat: Managing file systems (RHEL 10)","man 1 find (see PRINTF FORMAT and the -delete caveats), man 1 xargs, man 1 tar, man 1 rsync"]
+},
+{
+  id:"s03", level:"Core", mins:55, map:"RH124 ch6",
+  title:"Onboard a team under an audit policy",
+  role:"An auditor requires: named accounts for three engineers, a shared group, a locked service account, password ageing, and sudo rights that are provable from a file rather than from memory.",
+  brief:"Account management is the most frequently examined and most frequently botched area, because the defaults live in three different files and the sudo syntax is unforgiving.",
+  setup:["sudo -v","# no pre-seed required - you create everything"],
+  tasks:[
+    {q:"Create the group appops with GID 6000, and a system group appsvc with no fixed GID.",
+     hint:"System groups come from a lower GID range controlled by /etc/login.defs.",
+     sol:["sudo groupadd -g 6000 appops","sudo groupadd -r appsvc","getent group appops appsvc"],
+     check:"getent group appops shows x:6000"},
+    {q:"Create users nadia, tharindu and ravi with home directories, bash as login shell, and membership of appops as a supplementary group - without disturbing their primary groups.",
+     hint:"-G adds supplementary groups; -g would replace the primary group. -m forces home creation on systems where it is not the default.",
+     sol:["for u in nadia tharindu ravi; do","  sudo useradd -m -s /bin/bash -G appops \"$u\"","done","id nadia","getent passwd nadia tharindu ravi"],
+     check:"id nadia lists gid=<own group> and groups=...,6000(appops)"},
+    {q:"Set an initial password for each of them that must be changed at first login.",
+     hint:"You can pipe a password in with --stdin on RHEL, but the expiry is a separate ageing command that sets last-change to zero.",
+     sol:["for u in nadia tharindu ravi; do","  echo \"Onboard#2026\" | sudo passwd --stdin \"$u\"","  sudo chage -d 0 \"$u\"","done","sudo chage -l nadia"],
+     check:"chage -l nadia shows 'Last password change : password must be changed'"},
+    {q:"Enforce the audit policy on all three: maximum age 90 days, minimum age 1 day, warn 7 days before expiry, and disable the account 14 days after the password expires.",
+     hint:"One command does all four. The inactivity window is -I, not -E.",
+     sol:["for u in nadia tharindu ravi; do","  sudo chage -M 90 -m 1 -W 7 -I 14 \"$u\"","done","sudo chage -l ravi"],
+     check:"chage -l ravi shows Maximum 90, Minimum 1, Warning 7, Inactive 14"},
+    {q:"Make those ageing values the default for every future account created on this host.",
+     hint:"Defaults for useradd live in two places: the ageing values in /etc/login.defs and the skeleton/shell defaults in /etc/default/useradd.",
+     sol:["sudo grep -E '^(PASS_MAX_DAYS|PASS_MIN_DAYS|PASS_WARN_AGE|UID_MIN|GID_MIN)' /etc/login.defs","sudo sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/; s/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   1/; s/^PASS_WARN_AGE.*/PASS_WARN_AGE   7/' /etc/login.defs","sudo useradd -D              # shows /etc/default/useradd contents","sudo useradd -D -f 14        # default INACTIVE"],
+     check:"useradd -D shows INACTIVE=14; a newly created test user inherits 90/1/7"},
+    {q:"Create the service account appsvc: no home directory, no interactive login, locked password, primary group appsvc.",
+     hint:"A service account needs a shell that refuses login and a password field that cannot match anything. Two different flags, both required.",
+     sol:["sudo useradd -r -g appsvc -s /sbin/nologin -M -d /var/lib/appsvc appsvc","sudo passwd -l appsvc","sudo getent passwd appsvc","sudo passwd -S appsvc          # expect: LK"],
+     check:"passwd -S appsvc prints LK (locked) and the shell is /sbin/nologin"},
+    {q:"Grant appops members the right to run only systemctl restart/status on the unit httpd, and nothing else, as root without a password prompt. The rule must survive a package upgrade of sudo.",
+     hint:"Never edit /etc/sudoers directly, and never append there for local policy - drop a file in the include directory and validate it before it takes effect.",
+     sol:["sudo bash -c 'cat > /etc/sudoers.d/appops << SUDO","Cmnd_Alias APPSVC = /usr/bin/systemctl restart httpd, /usr/bin/systemctl status httpd","%appops ALL=(root) NOPASSWD: APPSVC","SUDO'","sudo chmod 0440 /etc/sudoers.d/appops","sudo visudo -cf /etc/sudoers.d/appops","sudo -l -U nadia"],
+     check:"visudo -cf reports 'parsed OK' and sudo -l -U nadia lists only the two commands"},
+    {q:"Prove the policy works: show that nadia can restart httpd but cannot read /etc/shadow, and that appsvc cannot log in at all.",
+     hint:"su - runs a login shell as another user. Expect one success and two refusals.",
+     sol:["sudo -u nadia sudo -n systemctl status httpd ; echo rc=$?","sudo -u nadia sudo -n cat /etc/shadow ; echo rc=$?   # must fail","sudo su - appsvc ; echo rc=$?                        # must refuse: nologin"],
+     check:"The shadow read is refused with 'a password is required' or 'not allowed'"}
+  ],
+  distro:[
+    ["RHEL 10","wheel is the default administrative group. passwd --stdin exists. /etc/sudoers includes /etc/sudoers.d by default."],
+    ["RHEL 9","Identical for this drill."],
+    ["Fedora 42","Identical to RHEL. Newly installed Fedora also adds the first user to wheel automatically."],
+    ["Ubuntu 24.04","The admin group is sudo, not wheel. passwd has no --stdin - use chpasswd instead: echo 'user:pass' | sudo chpasswd. adduser is a Perl wrapper with different defaults from useradd; in scripts always call useradd for portability."]
+  ],
+  practice:"Sudo rights expressed as a package-managed drop-in file are auditable; rights granted by adding someone to wheel are not. Real teams keep /etc/sudoers.d under configuration management and run visudo -c in CI.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Managing user and group accounts","man 5 login.defs, man 1 chage, man 8 useradd, man 5 sudoers, man 8 visudo"]
+},
+{
+  id:"s04", level:"Hard", mins:60, map:"RH124 ch7, RH134 ACL section",
+  title:"Build a shared workspace that enforces its own rules",
+  role:"Two teams share one directory on a file server. Files created by anyone must stay group-readable by appops, nobody may delete another persons files, and one external auditor needs read-only access without joining the group.",
+  brief:"Permissions questions are rarely 'what is 755'. They are 'make the directory behave a certain way for everyone who will ever write into it' - which means setgid, the sticky bit, umask, and ACLs including default ACLs.",
+  setup:["sudo groupadd -f appops","sudo useradd -m nadia 2>/dev/null; sudo useradd -m ravi 2>/dev/null; sudo useradd -m auditor 2>/dev/null","sudo usermod -aG appops nadia; sudo usermod -aG appops ravi","sudo install -d /srv/shared"],
+  tasks:[
+    {q:"Make /srv/shared owned by root:appops, writable by the group, and traversable but invisible in content to everyone else.",
+     hint:"Others need no read and no execute here. Work out the numeric mode before typing it.",
+     sol:["sudo chown root:appops /srv/shared","sudo chmod 2770 /srv/shared      # 2 = setgid, 770 = rwx for owner+group","stat -c '%A %U:%G' /srv/shared"],
+     check:"stat shows drwxrws--- root:appops"},
+    {q:"Guarantee that any file created inside inherits the group appops regardless of who creates it. Prove it with two different users.",
+     hint:"That is exactly what the s in the group field of the previous step does. Now demonstrate it.",
+     sol:["sudo -u nadia touch /srv/shared/from-nadia","sudo -u ravi  touch /srv/shared/from-ravi","ls -l /srv/shared"],
+     check:"Both files show group appops even though each users primary group differs"},
+    {q:"Stop users deleting each others files in that directory, while keeping the directory group-writable.",
+     hint:"This is the /tmp behaviour. It is a third special bit, and it lands on the directory, not the files.",
+     sol:["sudo chmod +t /srv/shared","stat -c '%A %a' /srv/shared      # drwxrws--T  3770","sudo -u ravi rm /srv/shared/from-nadia ; echo rc=$?   # must fail"],
+     check:"The delete attempt fails with 'Operation not permitted' and the mode reads 3770"},
+    {q:"Files created by team members currently end up 0644. Make new files default to 0660 and new directories to 0770 for members of appops - persistently, for login shells.",
+     hint:"umask subtracts from 0666 for files and 0777 for directories. Persist it in a drop-in under /etc/profile.d, applied only to members of the group.",
+     sol:["sudo tee /etc/profile.d/appops-umask.sh > /dev/null << 'EOS'","if id -nG | grep -qw appops; then","    umask 0007","fi","EOS","sudo chmod 0644 /etc/profile.d/appops-umask.sh","sudo su - nadia -c 'umask; touch /srv/shared/umask-test; ls -l /srv/shared/umask-test'"],
+     check:"umask prints 0007 for nadia and the new file is -rw-rw----"},
+    {q:"Give the user auditor read and execute on the directory and read on everything already in it, without adding auditor to appops and without changing the directory mode.",
+     hint:"This is what POSIX ACLs are for. Recursive application needs one flag; capital X applies execute only where it already exists.",
+     sol:["sudo setfacl -R -m u:auditor:rX /srv/shared","getfacl /srv/shared","ls -ld /srv/shared            # note the trailing + on the mode"],
+     check:"ls -ld shows a + and getfacl lists user:auditor:r-x"},
+    {q:"Make that auditor access apply automatically to every file and directory created in future.",
+     hint:"An ACL entry can be marked as a default entry, inherited by new children. It does not affect existing files.",
+     sol:["sudo setfacl -m d:u:auditor:rX /srv/shared","sudo -u nadia touch /srv/shared/new-after-default","getfacl /srv/shared/new-after-default"],
+     check:"The new file shows user:auditor:r-- inherited, without you touching it"},
+    {q:"Check the effective permission auditor actually gets, explain the mask line, then temporarily reduce the auditor to read-only-on-directory by tightening the mask, and finally remove the auditor entries entirely.",
+     hint:"The mask is the ceiling for all named users and groups. getfacl prints an #effective comment when the mask clips an entry.",
+     sol:["getfacl /srv/shared","sudo setfacl -m m::r /srv/shared      # mask = r only","getfacl /srv/shared                    # note #effective:r--","sudo setfacl -x u:auditor /srv/shared","sudo setfacl -b -R /srv/shared         # remove all ACLs recursively","ls -ld /srv/shared                     # the + is gone"],
+     check:"After -b the + disappears from ls -ld and getfacl shows only the three base entries"},
+    {q:"Find every file anywhere under /srv that is world-writable or has the setuid bit set, and report it.",
+     hint:"find can match on permission bits with -perm; the slash prefix means 'any of these bits'.",
+     sol:["sudo find /srv -xdev -type f -perm -0002 -printf '%M %u %p\\n'","sudo find / -xdev -type f -perm /6000 -printf '%M %u %p\\n' 2>/dev/null | head"],
+     check:"You can explain why /usr/bin/passwd appears in the setuid list"}
+  ],
+  distro:[
+    ["RHEL 10","XFS supports ACLs unconditionally. SELinux runs enforcing, so a file may carry correct permissions and still be refused - that is scenario 18, not a permissions bug."],
+    ["RHEL 9","Identical."],
+    ["Fedora 42","Identical; Btrfs also supports ACLs by default."],
+    ["Ubuntu 24.04","ext4 mounts with ACL support on by default since kernel 2.6.39-era defaults, but on an exotic mount check with: findmnt -no OPTIONS /srv. AppArmor replaces SELinux; nothing in this drill changes."]
+  ],
+  practice:"2770 plus the sticky bit is the standard shared-project directory in every enterprise file server build sheet. ACLs are the correct answer when someone needs access that does not justify a group - reach for them before you invent a group named after one person.",
+  docs:["Red Hat: Managing file systems (RHEL 10) - Managing file permissions and access control lists","man 1 setfacl, man 1 getfacl, man 5 acl, man 2 umask, man 1 find"]
+},
+{
+  id:"s05", level:"Core", mins:50, map:"RH124 ch8, RH134 ch3",
+  title:"A process is eating the box at 02:00",
+  role:"You are on call. Monitoring reports load average above 30 on an application node. SSH still works, barely. Find it, contain it, keep the evidence.",
+  brief:"Process control is judged on whether you can name the offender, stop it in the right order (TERM before KILL), keep the service running, and prove what happened afterwards.",
+  setup:["# create the load (3 spinners + one memory hog); run each in its own shell or with &","for i in 1 2 3; do ( while :; do :; done ) & done","sleep 1; jobs"],
+  tasks:[
+    {q:"Identify the top five CPU consumers with PID, user, %CPU, %MEM, start time and full command line - as a single sorted snapshot, not an interactive screen.",
+     hint:"ps takes a sort key. Interactive top is fine for looking; a snapshot is what you paste into the incident channel.",
+     sol:["ps -eo pid,ppid,user,pcpu,pmem,lstart,etime,comm --sort=-pcpu | head -n 6","# wide command line:","ps auxww --sort=-pcpu | head -n 6"],
+     check:"The bash spinner loops appear at the top with ~100% CPU each"},
+    {q:"Confirm the load and identify whether the box is CPU-bound, memory-bound or IO-bound.",
+     hint:"Load average alone cannot tell you. Compare run-queue against memory pressure and IO wait - uptime, free, and the wa column.",
+     sol:["uptime","free -h; cat /proc/pressure/cpu /proc/pressure/io /proc/pressure/memory","vmstat 1 5","top -b -n 1 | head -n 12"],
+     check:"You can state which of us/sy/wa dominates in the top summary line"},
+    {q:"Show the process tree so you can see which parent spawned the offenders, and show only processes owned by your user.",
+     hint:"ps has a forest mode; pstree renders the same relationship. -u filters by effective user.",
+     sol:["ps -ef --forest | head -40","pstree -pu $USER","ps -u $USER -o pid,ppid,stat,comm"],
+     check:"The spinners share a parent shell PID"},
+    {q:"Stop one offender politely, verify it is gone, and only then force-kill the remaining ones. Explain in one line why the order matters.",
+     hint:"Default signal is 15 (TERM), the one a process can trap and clean up with. 9 (KILL) cannot be trapped and leaves temp files and locks behind.",
+     sol:["kill -l | head","PID=$(pgrep -n -u $USER bash)","kill -TERM \"$PID\"; sleep 2; ps -p \"$PID\" || echo gone","pkill -9 -u $USER -f 'while :'","jobs; ps -u $USER -o pid,pcpu,comm --sort=-pcpu | head"],
+     check:"No bash spinner remains and load average starts falling"},
+    {q:"Restart a long-running job so it survives your SSH session closing, keep its output, and confirm it is detached from the terminal.",
+     hint:"Three ways: nohup, disown after backgrounding, or systemd-run as a transient unit. Show at least two.",
+     sol:["nohup sleep 600 > /var/tmp/job.log 2>&1 &","disown -h %1","ps -o pid,ppid,tty,stat,comm -p $!","# the systemd way, which survives logout cleanly and gets a journal:","systemd-run --user --unit=drill-sleep /bin/sleep 600","systemctl --user status drill-sleep"],
+     check:"ps shows TTY as ? for the nohup job"},
+    {q:"Lower the scheduling priority of a CPU-heavy job so interactive work stays responsive, both at launch and after the fact.",
+     hint:"nice sets it at start (range -20 to 19, only root can go negative), renice changes a running one.",
+     sol:["nice -n 19 bash -c 'while :; do :; done' &","ps -o pid,ni,pcpu,comm -p $!","sudo renice -n 5 -p $!","sudo renice -n -5 -u nadia        # by user","ps -o pid,ni,comm -p $!"],
+     check:"The NI column reads 19, then 5"},
+    {q:"Find which process is holding a given file or port open, and terminate it by matching its command line rather than by PID.",
+     hint:"lsof and fuser answer the file question; ss -p answers the port question; pkill -f matches the full command line.",
+     sol:["sudo ss -tulpn | grep ':22'","sudo lsof -i :22 | head","sudo lsof /var/log/messages 2>/dev/null | head","sudo fuser -v /var/log/messages","pgrep -a -f 'sleep 600'","pkill -f 'sleep 600'"],
+     check:"pgrep -a -f 'sleep 600' returns nothing afterwards"},
+    {q:"Write the incident evidence to a file: the offending command lines, their cumulative CPU time, and when they started.",
+     hint:"etime is elapsed, time is CPU consumed. Capture before you kill, in a real incident.",
+     sol:["ps -eo pid,user,lstart,etime,time,pcpu,args --sort=-time | head -n 15 | sudo tee /var/tmp/incident-$(date +%F-%H%M).txt","journalctl --since '10 min ago' -p warning --no-pager | tail -30"],
+     check:"The evidence file exists and includes a START column"}
+  ],
+  distro:[
+    ["RHEL 10","cgroups v2 only - cgroups v1 was removed. systemd-cgtop and systemctl status <unit> show per-unit CPU and memory accounting; use them before ps when the offender is a service."],
+    ["RHEL 9","cgroups v2 by default but v1 could still be booted. Otherwise identical."],
+    ["Fedora 42","Identical to RHEL 10."],
+    ["Ubuntu 24.04","Same tools. lsof and pstree may not be installed: sudo apt install lsof psmisc. Ubuntu ships with earlyoom on desktop images, which may kill the memory hog for you."]
+  ],
+  practice:"TERM, wait, then KILL is the industry rule, and it is also what systemd does for you (TimeoutStopSec then SIGKILL). If you find yourself typing kill -9 first, you are destroying the evidence you will be asked for in the postmortem.",
+  docs:["Red Hat: Monitoring and managing system status and performance (RHEL 10)","man 1 ps (STANDARD FORMAT SPECIFIERS), man 1 pgrep, man 7 signal, man 1 nice, man 8 lsof, man 1 systemd-run"]
+},
+{
+  id:"s06", level:"Core", mins:55, map:"RH124 ch10, ch13",
+  title:"Harden the jump host every engineer logs through",
+  role:"Security flagged the bastion: password logins are enabled, root can log in directly, and nobody knows which keys are trusted. You have a maintenance window of one hour and you must not lock yourself out.",
+  brief:"SSH is where most people discover that editing a config is the easy part and validating it before reload is the part that saves your job. Keep a second session open for every step of this drill.",
+  setup:["sudo systemctl status sshd --no-pager | head -5","# open a SECOND terminal to the same host now and keep it open"],
+  tasks:[
+    {q:"Generate a modern key pair for yourself with a comment identifying the host and the date, then show its fingerprint.",
+     hint:"Ed25519 is the current default recommendation; RSA must be at least 3072 bits if you must use it. -C sets the comment.",
+     sol:["ssh-keygen -t ed25519 -a 64 -C \"$USER@$(hostname -s)-$(date +%F)\" -f ~/.ssh/id_ed25519","ssh-keygen -lf ~/.ssh/id_ed25519.pub","# RSA fallback only if a legacy device requires it:","ssh-keygen -t rsa -b 4096 -C legacy-only -f ~/.ssh/id_rsa_legacy"],
+     check:"ssh-keygen -lf prints 256 SHA256:... (ED25519)"},
+    {q:"Install that public key for a target user so key-based login works, then verify the permissions SSH requires on the home directory, .ssh and authorized_keys.",
+     hint:"ssh-copy-id does it for you, but you must be able to do it by hand too: the directory is 700 and the file 600, owned by the user.",
+     sol:["ssh-copy-id -i ~/.ssh/id_ed25519.pub nadia@localhost","# manual equivalent:","sudo install -d -m 0700 -o nadia -g nadia /home/nadia/.ssh","sudo cp ~/.ssh/id_ed25519.pub /home/nadia/.ssh/authorized_keys","sudo chown nadia:nadia /home/nadia/.ssh/authorized_keys","sudo chmod 0600 /home/nadia/.ssh/authorized_keys","ssh -o PasswordAuthentication=no nadia@localhost 'id; exit'"],
+     check:"The test login succeeds without a password prompt"},
+    {q:"Disable password authentication and direct root login, and restrict SSH to members of the group appops - using a drop-in file, not by editing the main config.",
+     hint:"sshd_config reads /etc/ssh/sshd_config.d/*.conf, and for most keywords the FIRST value wins, so the drop-in must be included before the defaults. Check the Include line at the top of the main file.",
+     sol:["head -n 5 /etc/ssh/sshd_config      # confirm the Include line","sudo tee /etc/ssh/sshd_config.d/50-hardening.conf > /dev/null << 'EOS'","PermitRootLogin no","PasswordAuthentication no","KbdInteractiveAuthentication no","PubkeyAuthentication yes","AllowGroups appops","MaxAuthTries 3","LoginGraceTime 30","EOS","sudo chmod 0600 /etc/ssh/sshd_config.d/50-hardening.conf"],
+     check:"The file exists with mode 600 under sshd_config.d"},
+    {q:"Validate the configuration BEFORE applying it, then apply it without dropping existing sessions.",
+     hint:"sshd has a test mode and an extended test mode that prints the effective config. reload re-reads config; restart drops the daemon.",
+     sol:["sudo sshd -t && echo SYNTAX OK","sudo sshd -T | grep -Ei 'permitrootlogin|passwordauth|allowgroups|maxauthtries'","sudo systemctl reload sshd","sudo systemctl status sshd --no-pager | head -5"],
+     check:"sshd -T reports permitrootlogin no and passwordauthentication no"},
+    {q:"Prove the policy from the client side: password login is refused, key login works, root is refused, and a user outside appops is refused.",
+     hint:"Force a single auth method from the client to prove the server is enforcing, not the client choosing.",
+     sol:["ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no nadia@localhost ; echo rc=$?","ssh nadia@localhost 'echo key login OK'","ssh root@localhost ; echo rc=$?","sudo gpasswd -d nadia appops && ssh nadia@localhost ; echo rc=$?","sudo gpasswd -a nadia appops"],
+     check:"Only the key login succeeds; the others fail with Permission denied"},
+    {q:"Configure your client so that reaching the private node db01 through the bastion is a single command, with the key, user and jump host remembered.",
+     hint:"~/.ssh/config with a Host block, and the ProxyJump keyword. File permissions matter here too.",
+     sol:["cat >> ~/.ssh/config << 'EOS'","Host bastion","    HostName 10.0.0.10","    User nadia","    IdentityFile ~/.ssh/id_ed25519","","Host db01","    HostName 10.10.0.21","    User nadia","    ProxyJump bastion","EOS","chmod 0600 ~/.ssh/config","ssh -G db01 | grep -E 'proxyjump|identityfile|user '"],
+     check:"ssh -G db01 shows the proxyjump and identity file resolved"},
+    {q:"Copy a 100 MB artefact to the remote host over SSH in a way that can resume if the link drops, and compare it with a plain copy.",
+     hint:"scp is a single-shot copy; rsync over ssh can resume and can limit bandwidth.",
+     sol:["head -c 100M </dev/urandom > /var/tmp/artifact.bin","scp /var/tmp/artifact.bin nadia@localhost:/var/tmp/","rsync -avP --partial --bwlimit=10M -e ssh /var/tmp/artifact.bin nadia@localhost:/var/tmp/","sftp nadia@localhost <<< 'ls /var/tmp'"],
+     check:"The rsync run reports the file as up to date on a second invocation"},
+    {q:"Show every SSH authentication event from the last hour, and identify any failed attempts and their source.",
+     hint:"sshd logs to the journal on RHEL; the unit filter plus a time window is enough.",
+     sol:["sudo journalctl -u sshd --since '1 hour ago' --no-pager | tail -40","sudo journalctl -u sshd --since today | grep -Ei 'failed|invalid|accepted'","sudo lastb | head        # bad logins, from /var/log/btmp","last -n 10               # good logins, from /var/log/wtmp"],
+     check:"You can point at one Accepted publickey line and read the fingerprint from it"}
+  ],
+  distro:[
+    ["RHEL 10","Host key permissions were tightened back to 0600 and the ssh_keys group was removed. The DEFAULT crypto policy no longer accepts TLS RSA key exchange and the LEGACY policy no longer allows SHA-1 signatures in TLS - so an old client may fail to negotiate. Check with: update-crypto-policies --show."],
+    ["RHEL 9","Host keys are 0640 owned by group ssh_keys. update-crypto-policies --set DEFAULT:SHA1 still exists here; it was removed in RHEL 10."],
+    ["Fedora 42","Same as RHEL 10, including system-wide crypto policies."],
+    ["Ubuntu 24.04","No crypto policies framework - cipher and MAC lists are set directly in sshd_config. The service unit is called ssh (with an alias sshd), so use systemctl reload ssh. Ubuntu 24.04 splits the socket activation into ssh.socket; if reload does nothing, check systemctl status ssh.socket."]
+  ],
+  practice:"Two rules that survive every audit: never test a config change by restarting the only daemon you are connected through without a second session open, and always run the daemons own validator (sshd -t, nginx -t, named-checkconf) before reload. sshd -T is the one that settles arguments, because it prints what the daemon actually resolved.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Using secure communications between two systems with OpenSSH","man 5 sshd_config (note the Include and 'first obtained value' rules), man 5 ssh_config, man 1 ssh-keygen"]
+},
+{
+  id:"s07", level:"Hard", mins:60, map:"RH124 ch9, ch14",
+  title:"A service will not start after a config change",
+  role:"Someone changed a web server config and rebooted. The unit is failed, the team is asking for an ETA, and the change is not in git.",
+  brief:"This drill teaches the systemd diagnostic loop that applies to every unit you will ever debug: status, journal, cat, edit, daemon-reload, verify - plus overrides and masking, which are where most people lose marks and time.",
+  setup:["sudo dnf install -y httpd  # RHEL/Fedora   |   sudo apt install -y apache2  # Ubuntu","sudo systemctl enable --now httpd","echo 'Listen 80' | sudo tee /etc/httpd/conf.d/zz-broken.conf","echo 'ServerRoot /does/not/exist' | sudo tee -a /etc/httpd/conf.d/zz-broken.conf","sudo systemctl restart httpd  # expect failure"],
+  tasks:[
+    {q:"Read the failure properly: the unit state, the exit code, and the last log lines - in one command.",
+     hint:"systemctl status already tails the journal; -l stops truncation.",
+     sol:["systemctl status httpd -l --no-pager","systemctl is-active httpd; systemctl is-enabled httpd; systemctl is-failed httpd","systemctl show httpd -p ExecMainStatus -p Result -p ActiveState"],
+     check:"You can quote the exit status and the Result= value"},
+    {q:"Pull only this units log for the current boot, at priority warning or worse, with full message detail.",
+     hint:"-u filters by unit, -b by boot, -p by priority, -o verbose prints all journal fields.",
+     sol:["sudo journalctl -u httpd -b -p warning --no-pager","sudo journalctl -u httpd -b -o verbose --no-pager | tail -40","sudo journalctl -xeu httpd --no-pager | tail -30"],
+     check:"You can name the offending directive from the log alone"},
+    {q:"Confirm the diagnosis with the applications own config test, without starting the service.",
+     hint:"Apache ships a syntax checker. Every serious daemon has one.",
+     sol:["sudo httpd -t                 # RHEL/Fedora","sudo apachectl configtest      # portable alias","sudo apache2ctl configtest     # Ubuntu"],
+     check:"The test names the file and line number"},
+    {q:"Fix the config, restart, and confirm the service is both running and listening.",
+     hint:"Remove the bad directive; then check the socket, not just the unit state - a unit can be active and still not listening.",
+     sol:["sudo rm -f /etc/httpd/conf.d/zz-broken.conf","sudo httpd -t && sudo systemctl restart httpd","systemctl is-active httpd","sudo ss -tlnp | grep ':80'","curl -sI http://localhost | head -1"],
+     check:"curl returns HTTP/1.1 200 (or 403 with an empty docroot, which still proves it is listening)"},
+    {q:"Show the shipped unit file and every drop-in currently applied to it, and say where each file lives.",
+     hint:"One command prints the full merged picture with file path headers.",
+     sol:["systemctl cat httpd","systemctl show httpd -p FragmentPath -p DropInPaths","ls -l /usr/lib/systemd/system/httpd.service /etc/systemd/system/httpd.service.d/ 2>/dev/null"],
+     check:"You can state the difference between /usr/lib/systemd/system and /etc/systemd/system"},
+    {q:"Make the service restart automatically on failure, wait 10 seconds between attempts, and give it a 90 second start timeout - without editing the vendor unit file.",
+     hint:"systemctl edit creates an override drop-in. The plain form creates a partial override; --full copies the whole unit.",
+     sol:["sudo systemctl edit httpd","# in the editor, between the marker comments:","# [Service]","# Restart=on-failure","# RestartSec=10","# TimeoutStartSec=90","sudo systemctl daemon-reload","systemctl show httpd -p Restart -p RestartSec -p TimeoutStartUSec","systemctl cat httpd | tail -20"],
+     check:"systemctl show prints Restart=on-failure and RestartSec=10s"},
+    {q:"Prove the override works: kill the main process and watch systemd bring it back, reading the evidence from the journal.",
+     hint:"Kill the MainPID. Then follow the journal for the unit.",
+     sol:["MP=$(systemctl show -p MainPID --value httpd)","sudo kill -9 \"$MP\"","sleep 12; systemctl status httpd --no-pager | head -6","sudo journalctl -u httpd --since '2 min ago' --no-pager | tail -15"],
+     check:"The journal shows 'Scheduled restart job' and the unit is active again with a new MainPID"},
+    {q:"Prevent the service from ever being started - even as a dependency of another unit - then reverse it.",
+     hint:"disable only removes the boot symlink. The stronger form links the unit to /dev/null.",
+     sol:["sudo systemctl mask httpd","sudo systemctl start httpd ; echo rc=$?     # refused","systemctl status httpd --no-pager | head -3","ls -l /etc/systemd/system/httpd.service","sudo systemctl unmask httpd","sudo systemctl enable --now httpd"],
+     check:"While masked, the unit file path is a symlink to /dev/null and start is refused"},
+    {q:"Map the boot: what the default target is, which units this service wants and is wanted by, and how to reach a state with no graphical stack.",
+     hint:"list-dependencies goes both ways with --reverse. Targets replace SysV runlevels.",
+     sol:["systemctl get-default","systemctl list-dependencies httpd | head -20","systemctl list-dependencies --reverse httpd","systemctl list-units --type=target","sudo systemctl isolate multi-user.target   # careful on a desktop"],
+     check:"You can state the target httpd is wanted by (multi-user.target)"}
+  ],
+  distro:[
+    ["RHEL 10","httpd.service now ships with hardening directives applied by default, including ProtectHome=read-only, so a docroot under /home will fail even with correct permissions. Read /usr/lib/systemd/system/httpd.service before blaming SELinux."],
+    ["RHEL 9","No such default hardening on httpd; a /home docroot fails for SELinux reasons only."],
+    ["Fedora 42","Same as RHEL 10."],
+    ["Ubuntu 24.04","Package is apache2, config lives in /etc/apache2 with sites-available and sites-enabled, and the validator is apache2ctl configtest. systemctl edit, cat, mask and drop-ins are identical - systemd is the portable part."]
+  ],
+  practice:"Never edit a vendor unit file in /usr/lib/systemd/system: the next package update overwrites it silently. systemctl edit writes to /etc/systemd/system/<unit>.d/override.conf, which survives updates and shows up in systemctl cat - which is what the next engineer will run.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Managing systemd services","man 1 systemctl, man 5 systemd.service, man 5 systemd.unit, man 5 systemd.exec"]
+},
+{
+  id:"s08", level:"Core", mins:55, map:"RH124 ch11",
+  title:"Reconstruct an incident from logs alone",
+  role:"A node rebooted unexpectedly at 03:40 last night. The application team says 'the OS killed us'. You have to establish what actually happened, and make sure the next occurrence leaves evidence behind.",
+  brief:"Journald is volatile by default on a fresh install - the most common reason an incident cannot be reconstructed is that the previous boot was never persisted. This drill covers reading, filtering, persisting, sizing and forwarding logs, plus time correctness, without which correlation is impossible.",
+  setup:["logger -p local7.warning 'DRILL: synthetic warning event'","logger -t drillapp -p user.err 'DRILL: application error 500 from 10.0.0.5'","sudo systemctl restart chronyd 2>/dev/null || sudo systemctl restart systemd-timesyncd"],
+  tasks:[
+    {q:"Establish whether the journal survives reboots on this host, and if not, make it persistent - then confirm where it now lives.",
+     hint:"Storage is set in journald.conf; persistence is really just the existence of /var/log/journal. The service must be restarted or signalled to pick it up.",
+     sol:["sudo journalctl --list-boots | head","grep -E '^#?Storage' /etc/systemd/journald.conf","sudo mkdir -p /var/log/journal","sudo sed -i 's/^#\\?Storage=.*/Storage=persistent/' /etc/systemd/journald.conf","sudo systemd-tmpfiles --create --prefix /var/log/journal","sudo systemctl restart systemd-journald","journalctl --list-boots"],
+     check:"journalctl --list-boots lists more than one boot after a reboot"},
+    {q:"Show everything that happened between 03:30 and 04:00 last night, at priority err or worse.",
+     hint:"--since and --until accept 'YYYY-MM-DD HH:MM:SS' and relative forms like 'yesterday'. Priority accepts a name or a range.",
+     sol:["sudo journalctl --since '2026-09-12 03:30' --until '2026-09-12 04:00' -p err --no-pager","sudo journalctl --since yesterday --until today -p 0..3 --no-pager | tail -40","sudo journalctl -b -1 -p err --no-pager   # previous boot"],
+     check:"You can produce an empty or populated result and explain which boot you queried"},
+    {q:"Answer the 'did the kernel kill it' question: show kernel messages only, and search for out-of-memory killer activity across all stored boots.",
+     hint:"-k is kernel only; --grep applies a regex to the message field; -b -1 is the previous boot.",
+     sol:["sudo journalctl -k -b -1 --no-pager | tail -50","sudo journalctl --grep='Out of memory|oom-kill|Killed process' --no-pager","sudo dmesg -T | grep -iE 'oom|killed process'"],
+     check:"You can state definitively whether an OOM kill is recorded"},
+    {q:"Follow the log live, filtered to one unit and one identifier, and generate a matching event from a second terminal.",
+     hint:"-f follows; -t filters by syslog identifier; combine with -u for the unit.",
+     sol:["journalctl -f -t drillapp &","logger -t drillapp -p user.err 'DRILL: second event'","sudo journalctl -u sshd -f --no-pager   # ctrl-c to stop"],
+     check:"The tailing session prints the new message within a second"},
+    {q:"Show the journals disk footprint, cap it at 500 MB permanently, and vacuum anything older than 14 days right now.",
+     hint:"SystemMaxUse in journald.conf is the persistent control; --vacuum-* are the immediate ones.",
+     sol:["journalctl --disk-usage","sudo sed -i 's/^#\\?SystemMaxUse=.*/SystemMaxUse=500M/' /etc/systemd/journald.conf","sudo systemctl restart systemd-journald","sudo journalctl --vacuum-time=14d","sudo journalctl --vacuum-size=500M"],
+     check:"journalctl --disk-usage reports a value under the cap"},
+    {q:"Route every message from facility local7 into its own file under /var/log, using the traditional syslog daemon, and prove it works.",
+     hint:"rsyslog reads /etc/rsyslog.d/*.conf. A selector is facility.priority followed by the target file. Restart, then generate an event with logger.",
+     sol:["sudo tee /etc/rsyslog.d/60-drill.conf > /dev/null << 'EOS'","local7.*    /var/log/drill.log","EOS","sudo systemctl restart rsyslog","logger -p local7.info 'DRILL: rsyslog routing test'","sudo tail -5 /var/log/drill.log"],
+     check:"/var/log/drill.log contains the test line"},
+    {q:"Make sure that new log file is rotated weekly, kept for four generations, compressed, and created with mode 0640 root:adm - then force a rotation to test the rule without waiting a week.",
+     hint:"logrotate config goes in /etc/logrotate.d. Test with -d (dry run) before -f (force).",
+     sol:["sudo tee /etc/logrotate.d/drill > /dev/null << 'EOS'","/var/log/drill.log {","    weekly","    rotate 4","    compress","    delaycompress","    missingok","    notifempty","    create 0640 root root","}","EOS","sudo logrotate -d /etc/logrotate.d/drill      # dry run","sudo logrotate -f /etc/logrotate.d/drill      # force","ls -l /var/log/drill.log*"],
+     check:"A drill.log.1 (or .1.gz) appears and the live file is recreated"},
+    {q:"Verify the clock is correct and synchronised - and explain why this is the first thing to check in any multi-host incident.",
+     hint:"timedatectl summarises; the chrony client shows the actual sources and offset.",
+     sol:["timedatectl","chronyc sources -v","chronyc tracking","sudo timedatectl set-timezone Asia/Colombo","sudo timedatectl set-ntp true"],
+     check:"timedatectl shows 'System clock synchronized: yes' and 'NTP service: active'"}
+  ],
+  distro:[
+    ["RHEL 10","chronyd is the NTP implementation; systemd-timesyncd is not used. rsyslog is still installed and journald is the primary store."],
+    ["RHEL 9","Identical behaviour for this drill."],
+    ["Fedora 42","Journal is persistent by default on new installs. rsyslog is NOT installed by default - dnf install rsyslog first, or do the whole drill with journald only."],
+    ["Ubuntu 24.04","Time sync is systemd-timesyncd (timedatectl set-ntp true, then timedatectl show-timesync --all), not chrony, unless you install chrony. rsyslog IS installed and /var/log/syslog is the catch-all file. logrotate configs default to create 0640 root adm - the adm group is Ubuntu-specific."]
+  ],
+  practice:"Persistent journal, a size cap, and correct NTP are three lines of configuration that decide whether a postmortem is possible at all. Do them in your base image, not after the incident.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Auditing the system / Reviewing logs","man 1 journalctl, man 5 journald.conf, man 5 rsyslog.conf, man 8 logrotate, man 1 timedatectl, man 1 chronyc"]
+},
+{
+  id:"s09", level:"Hard", mins:60, map:"RH124 ch12",
+  title:"Renumber a host onto a new management network",
+  role:"The datacentre is being re-addressed. This host must move from DHCP to a static address on a new VLAN, keep a second connection profile for the old network for rollback, and resolve internal names correctly - all over SSH without losing the session.",
+  brief:"NetworkManager is the only supported path on RHEL 9 and 10, and the ifcfg files people remember from RHEL 7 no longer exist in RHEL 10. This drill is done entirely with nmcli, plus the verification tools that prove it worked.",
+  setup:["nmcli -t -f NAME,DEVICE,TYPE connection show","ip -br addr","# use a SECOND interface or a console/VM window - do not renumber the interface carrying your SSH session"],
+  tasks:[
+    {q:"List all connection profiles and devices, and identify which profile is currently active on which device, including its method (auto vs manual).",
+     hint:"nmcli has terse and field-selected output modes that are better than the pretty default for scripting.",
+     sol:["nmcli connection show","nmcli device status","nmcli -f NAME,UUID,TYPE,DEVICE,ACTIVE connection show","nmcli -g ipv4.method,ipv4.addresses connection show \"$(nmcli -t -f NAME connection show --active | head -1)\""],
+     check:"You can name the active profile, its UUID and its device"},
+    {q:"Create a new profile named mgmt on a spare interface with a static address 192.168.56.40/24, gateway 192.168.56.1, DNS 192.168.56.1 and 1.1.1.1, search domain corp.local - without activating it yet.",
+     hint:"con add takes con-name, ifname, type and ip4/gw4 in one go; everything else is a property set with con mod. autoconnect no keeps it dormant.",
+     sol:["nmcli connection add type ethernet con-name mgmt ifname enp0s8 \\","  ipv4.method manual ipv4.addresses 192.168.56.40/24 \\","  ipv4.gateway 192.168.56.1 ipv4.dns '192.168.56.1 1.1.1.1' \\","  ipv4.dns-search corp.local ipv6.method disabled \\","  autoconnect no","nmcli connection show mgmt | grep -E 'ipv4.(method|addresses|gateway|dns)'"],
+     check:"nmcli connection show mgmt lists ipv4.method: manual with the right address"},
+    {q:"Show where NetworkManager stored that profile on disk and read the file.",
+     hint:"RHEL 9 and 10 store profiles as keyfiles, not as ifcfg scripts.",
+     sol:["ls -l /etc/NetworkManager/system-connections/","sudo cat /etc/NetworkManager/system-connections/mgmt.nmconnection","stat -c '%a %U:%G' /etc/NetworkManager/system-connections/mgmt.nmconnection"],
+     check:"The file is a .nmconnection keyfile with mode 600"},
+    {q:"Activate the profile, confirm the address, route and DNS actually took effect at the kernel level - not just in NetworkManagers view.",
+     hint:"nmcli tells you what it intends; ip and resolvectl tell you what the kernel and resolver actually have.",
+     sol:["sudo nmcli connection up mgmt","ip -br addr show enp0s8","ip route show","resolvectl status enp0s8 2>/dev/null || cat /etc/resolv.conf","nmcli device show enp0s8 | grep -E 'IP4.(ADDRESS|GATEWAY|DNS)'"],
+     check:"ip -br addr shows 192.168.56.40/24 and ip route shows the new gateway"},
+    {q:"Add a second address to the same profile without removing the first, then remove just the second.",
+     hint:"nmcli property modification supports += and -= prefixes for list-valued properties.",
+     sol:["sudo nmcli connection modify mgmt +ipv4.addresses 192.168.56.41/24","sudo nmcli connection up mgmt","ip -br addr show enp0s8","sudo nmcli connection modify mgmt -ipv4.addresses 192.168.56.41/24","sudo nmcli connection up mgmt"],
+     check:"Both addresses appear, then only the first remains"},
+    {q:"Set the system hostname permanently, add a local name resolution entry for db01, and verify that resolution order works.",
+     hint:"hostnamectl sets the static hostname; /etc/hosts is consulted before DNS according to /etc/nsswitch.conf.",
+     sol:["sudo hostnamectl set-hostname bastion01.corp.local","hostnamectl status","echo '192.168.56.50  db01 db01.corp.local' | sudo tee -a /etc/hosts","getent hosts db01","grep ^hosts: /etc/nsswitch.conf"],
+     check:"getent hosts db01 returns the static entry"},
+    {q:"Run the standard connectivity ladder to prove the path: link, gateway, DNS, then a named host - and interpret a failure at each rung.",
+     hint:"Layer by layer: is the link up, can you reach the gateway, does the resolver answer, does the name resolve to something you can reach.",
+     sol:["ip -br link","ping -c2 192.168.56.1        # gateway","ping -c2 1.1.1.1              # routing beyond the gateway","dig +short redhat.com         # or: host redhat.com","ping -c2 redhat.com","tracepath -4 redhat.com | head","ss -tunap | head"],
+     check:"You can state which rung fails when you unplug DNS (ip works, name does not)"},
+    {q:"Roll back: deactivate mgmt, bring the original profile back up, and delete the mgmt profile cleanly.",
+     hint:"down, up, delete. Deleting a profile does not remove the address if the profile is still active.",
+     sol:["sudo nmcli connection down mgmt","sudo nmcli connection up 'Wired connection 1'","sudo nmcli connection delete mgmt","nmcli connection show","ls /etc/NetworkManager/system-connections/"],
+     check:"The keyfile is gone and the original profile is active"}
+  ],
+  distro:[
+    ["RHEL 10","Support for ifcfg-format files was REMOVED. /etc/sysconfig/network-scripts is no longer read. dhclient was also removed; NetworkManager uses its internal DHCP client (dhcp=internal). The team driver (teamd/libteam) is gone - use bonding."],
+    ["RHEL 9","Keyfiles are the default for new profiles, but existing ifcfg files still work. dhclient and teamd are present but deprecated. Migrate before upgrading to 10."],
+    ["Fedora 42","Keyfile-only, same as RHEL 10. nmcli syntax identical."],
+    ["Ubuntu 24.04","Servers use netplan writing YAML in /etc/netplan/*.yaml, rendered to systemd-networkd (server) or NetworkManager (desktop). Workflow: edit YAML, then sudo netplan try (auto-reverts after 120s) then sudo netplan apply. nmcli only works if the renderer is NetworkManager. Verification commands (ip, ss, resolvectl) are identical."]
+  ],
+  practice:"netplan try and nmcli connection up with a rollback profile exist for the same reason: renumbering a host over its own management link is how engineers lock themselves out. Keep the old profile until the new one is verified, and always have console access before you touch the primary interface.",
+  docs:["Red Hat: Configuring and managing networking (RHEL 10)","man 1 nmcli, man 5 nm-settings-nmcli, man 5 NetworkManager.conf, man 8 ip, man 8 ss, man 5 nsswitch.conf"]
+},
+{
+  id:"s10", level:"Hard", mins:60, map:"RH134 ch10",
+  title:"Firewall a three-tier application",
+  role:"One host runs a web front end (80/443), an application listener on 8080 that only the internal subnet may reach, and SSH that only the management subnet may reach. Everything else is denied. Nothing may break when the host reboots.",
+  brief:"firewalld is zone-based, and the single most common mistake is forgetting that runtime and permanent are two separate rule sets. This drill also covers source-based zone assignment, rich rules, port forwarding and masquerading.",
+  setup:["sudo dnf install -y firewalld  # RHEL/Fedora","sudo systemctl enable --now firewalld","sudo firewall-cmd --state"],
+  tasks:[
+    {q:"Report the current firewall posture: default zone, active zones with their interfaces and sources, and everything the default zone currently allows.",
+     hint:"--list-all-zones is noisy; --list-all on the active zone is the one you want.",
+     sol:["sudo firewall-cmd --state","sudo firewall-cmd --get-default-zone","sudo firewall-cmd --get-active-zones","sudo firewall-cmd --list-all","sudo firewall-cmd --get-services | tr ' ' '\\n' | grep -E '^(http|https|ssh)$'"],
+     check:"You can name the default zone and list its allowed services"},
+    {q:"Open HTTP and HTTPS permanently in the public zone by service name, and make them effective without a reboot.",
+     hint:"Permanent changes do not apply until a reload. Do both, then verify from the permanent set specifically.",
+     sol:["sudo firewall-cmd --permanent --zone=public --add-service=http --add-service=https","sudo firewall-cmd --reload","sudo firewall-cmd --zone=public --list-services","sudo firewall-cmd --permanent --zone=public --list-services   # the authoritative check"],
+     check:"Both runtime and permanent listings include http and https"},
+    {q:"Create an internal zone that accepts traffic from 10.10.0.0/24 only, and allow port 8080/tcp there - not in the default zone.",
+     hint:"A zone can be bound to a source network instead of an interface. Sources win over interfaces for matching.",
+     sol:["sudo firewall-cmd --permanent --zone=internal --add-source=10.10.0.0/24","sudo firewall-cmd --permanent --zone=internal --add-port=8080/tcp","sudo firewall-cmd --reload","sudo firewall-cmd --zone=internal --list-all","sudo firewall-cmd --get-active-zones"],
+     check:"The internal zone lists the source 10.10.0.0/24 and port 8080/tcp"},
+    {q:"Restrict SSH so it is reachable only from the management subnet 10.20.0.0/24 and denied everywhere else. Verify you have not locked yourself out first.",
+     hint:"A rich rule carries a source and an action. Remove the plain ssh service from the wide-open zone only after the rich rule is proven.",
+     sol:["sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family=ipv4 source address=10.20.0.0/24 service name=ssh accept'","sudo firewall-cmd --reload","sudo firewall-cmd --zone=public --list-rich-rules","# only after confirming your own source address matches:","ip -br addr; who am i","sudo firewall-cmd --permanent --zone=public --remove-service=ssh","sudo firewall-cmd --reload"],
+     check:"--list-rich-rules shows the accept rule and ssh is no longer in --list-services"},
+    {q:"Rate-limit new SSH connections to five per minute and log dropped attempts with a prefix, using rich rules.",
+     hint:"Rich rules support a limit clause and a log clause with prefix and level.",
+     sol:["sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family=ipv4 source address=10.20.0.0/24 service name=ssh log prefix=\"SSH-ACCEPT \" level=info limit value=5/m accept'","sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family=ipv4 service name=ssh log prefix=\"SSH-DROP \" level=notice limit value=3/m drop'","sudo firewall-cmd --reload","sudo firewall-cmd --list-rich-rules","sudo journalctl -k --grep='SSH-' --no-pager | tail"],
+     check:"Both rich rules are listed and kernel log entries appear with your prefix"},
+    {q:"Forward inbound port 443 on this host to 8443 on the application host 10.10.0.21, and enable the address translation that makes return traffic work.",
+     hint:"Port forwarding between hosts needs masquerade enabled in the zone, and IP forwarding in the kernel.",
+     sol:["sudo firewall-cmd --permanent --zone=public --add-masquerade","sudo firewall-cmd --permanent --zone=public --add-forward-port=port=443:proto=tcp:toport=8443:toaddr=10.10.0.21","sudo firewall-cmd --reload","sudo firewall-cmd --zone=public --list-all","sysctl net.ipv4.ip_forward","sudo sysctl -w net.ipv4.ip_forward=1","echo 'net.ipv4.ip_forward = 1' | sudo tee /etc/sysctl.d/99-forward.conf"],
+     check:"--list-all shows masquerade: yes and the forward-port entry"},
+    {q:"Inspect the nftables ruleset firewalld actually generated, and explain the relationship between the two.",
+     hint:"firewalld is a front end; the kernel enforces nftables rules. Reading them is how you resolve arguments about rule order.",
+     sol:["sudo nft list ruleset | head -60","sudo nft list table inet firewalld | grep -A5 'chain filter_IN_public_allow'","sudo firewall-cmd --direct --get-all-rules   # legacy escape hatch, avoid in new builds"],
+     check:"You can find your port 8080 rule inside the nft output"},
+    {q:"Write a panic-mode test and recovery: block all traffic, confirm it is blocked, then restore - and explain why you would never do this over SSH.",
+     hint:"firewalld has an explicit panic mode. Run this from a console session only.",
+     sol:["sudo firewall-cmd --panic-on","sudo firewall-cmd --query-panic","sudo firewall-cmd --panic-off","# safer alternative for a real lockout risk:","sudo systemd-run --on-active=120 --timer-property=AccuracySec=1s firewall-cmd --panic-off"],
+     check:"--query-panic returns yes, then no"}
+  ],
+  distro:[
+    ["RHEL 10","firewalld on nftables. The firewalld lockdown feature was REMOVED in RHEL 10. iptables-nft is deprecated and its kernel modules moved to kernel-modules-extra - build new rules with firewalld or nft only."],
+    ["RHEL 9","Same firewalld model; iptables-nft still present but deprecated (loading it logs a 'not recommended for new deployments' warning)."],
+    ["Fedora 42","Identical to RHEL 10."],
+    ["Ubuntu 24.04","ufw is the default front end over nftables: sudo ufw allow 80/tcp, sudo ufw allow from 10.20.0.0/24 to any port 22 proto tcp, sudo ufw enable, sudo ufw status verbose. Rules are permanent by default - there is no runtime/permanent split. firewalld can be installed, but do not run both."]
+  ],
+  practice:"Two habits separate people who get paged from people who do not: always end a firewalld change with --reload and re-check with --permanent --list-all, and always add the new allow rule before removing the old one. Source-based zones are how real multi-tier hosts are segmented - one zone per trust boundary, never a pile of rich rules in public.",
+  docs:["Red Hat: Securing networks (RHEL 10) - Using and configuring firewalld / Getting started with nftables","man 1 firewall-cmd, man 5 firewalld.richlanguage, man 5 firewalld.zone, man 8 nft"]
+},
+{
+  id:"s11", level:"Core", mins:50, map:"RH124 ch14",
+  title:"Run a patching window you can roll back",
+  role:"Monthly patch night. You must apply security errata only, know exactly what changed, restart only the services that need it, and be able to undo the whole transaction if the application team calls at 06:00.",
+  brief:"Package management is judged on whether you can query before you install, scope an update, and reverse it. dnf history is the feature most people never learn and the one that saves the night.",
+  setup:["sudo dnf repolist","sudo dnf clean all && sudo dnf makecache"],
+  tasks:[
+    {q:"List enabled repositories with their package counts, then show the full configuration of one repository including its GPG settings.",
+     hint:"repolist has a verbose mode; the config lives in /etc/yum.repos.d/*.repo.",
+     sol:["sudo dnf repolist --enabled","sudo dnf repolist -v | head -40","sudo dnf config-manager --dump 2>/dev/null | head -30","grep -rE '^\\[|gpgcheck|enabled|baseurl|metalink' /etc/yum.repos.d/*.repo | head -30"],
+     check:"You can state whether gpgcheck is on for every enabled repo"},
+    {q:"Answer three query questions without installing anything: which package provides the command /usr/sbin/semanage, what files a package installs, and which package owns a file already on disk.",
+     hint:"dnf provides searches package contents; rpm -ql lists an installed package; rpm -qf maps a path back to its package. Note the RHEL 10 filelists caveat.",
+     sol:["sudo dnf provides /usr/sbin/semanage","# RHEL 10: filelists metadata is no longer downloaded by default. If the path query fails:","sudo dnf provides '*/semanage' --setopt=optional_metadata_types=filelists","rpm -qf /usr/bin/ssh","rpm -ql openssh-clients | head","rpm -qi openssh-clients | head -15","dnf repoquery --list openssh-server | head"],
+     check:"You can name the package that owns /usr/bin/ssh"},
+    {q:"Show what a full update would do without doing it, then apply security errata only.",
+     hint:"--assumeno or check-update give you the preview; updateinfo describes errata; --security scopes the transaction.",
+     sol:["sudo dnf check-update | head -30","sudo dnf updateinfo list --available | head -20","sudo dnf update --security --assumeno","sudo dnf update --security -y"],
+     check:"The transaction summary lists only packages tied to security advisories"},
+    {q:"Determine which running services are using deleted libraries and therefore need a restart, and restart exactly those.",
+     hint:"dnf ships a plugin for this. The -r form answers with a yes/no exit status suitable for scripts.",
+     sol:["sudo dnf install -y dnf-utils   # provides needs-restarting","sudo needs-restarting -r ; echo rc=$?     # 1 = reboot required","sudo needs-restarting -s                  # services needing restart","sudo systemctl restart <unit-from-the-list>"],
+     check:"needs-restarting -s prints a list of unit names (or nothing if clean)"},
+    {q:"Review the transaction history, inspect what one transaction changed, and roll it back.",
+     hint:"history list, history info <id>, then undo. Rollback is not possible when a dependency has since been removed - know that limit.",
+     sol:["sudo dnf history list | head","sudo dnf history info last","sudo dnf history undo last -y","sudo dnf history list | head -3","# to repeat a transaction on another host:","sudo dnf history redo <ID>"],
+     check:"A new transaction appears in the history describing the reversal"},
+    {q:"Install a package from a third-party repository you add yourself, with GPG verification enabled, and prove the signature was checked.",
+     hint:"Add the repo with config-manager or a .repo file, import the key explicitly, then query the installed package signature.",
+     sol:["sudo dnf install -y \\","  https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm","sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-10","sudo dnf repolist | grep -i epel","sudo dnf install -y htop","rpm -qi htop | grep -i signature","rpm -q gpg-pubkey --qf '%{name}-%{version} %{summary}\\n'"],
+     check:"rpm -qi shows a Signature line with a key ID, not '(none)'"},
+    {q:"Download a package and all its dependencies for an air-gapped host, without installing them.",
+     hint:"dnf download --resolve, or the downloadonly plugin with a chosen directory.",
+     sol:["sudo dnf install -y dnf-plugins-core","mkdir -p /var/tmp/offline && cd /var/tmp/offline","sudo dnf download --resolve --alldeps httpd","ls -1 /var/tmp/offline | head","# alternative:","sudo dnf install --downloadonly --downloaddir=/var/tmp/offline httpd"],
+     check:"The directory contains httpd plus its dependency RPMs"},
+    {q:"Verify the integrity of an installed package against the RPM database and interpret the output.",
+     hint:"rpm -V prints a character mask per changed file: S size, M mode, 5 checksum, U user, G group, T mtime, c means config file.",
+     sol:["sudo rpm -V openssh-server","sudo rpm -Va | head -20","echo '# drill' | sudo tee -a /etc/ssh/sshd_config > /dev/null","sudo rpm -V openssh-server      # now shows S.5....T. c /etc/ssh/sshd_config","sudo sed -i '$ d' /etc/ssh/sshd_config"],
+     check:"You can decode the S.5....T. mask in one sentence"}
+  ],
+  distro:[
+    ["RHEL 10","Modularity is deprecated and no modular content ships - dnf module is effectively dead. Filelists metadata is NOT downloaded by default, so file-path queries may need --setopt=optional_metadata_types=filelists. RPM 4.19 verifies signatures through Sequoia PGP."],
+    ["RHEL 9","dnf module enable/install still matters (php:8.1, nodejs:18 and so on). Filelists are downloaded by default."],
+    ["Fedora 42","Ships DNF 5, where dnf is dnf5: some flags differ (dnf5 repoquery, dnf5 history). RHEL 10 still ships the DNF 4 line - do not assume Fedora syntax works on RHEL."],
+    ["Ubuntu 24.04","apt update / apt upgrade / apt full-upgrade; query with apt-cache policy, dpkg -S <path> (equivalent to rpm -qf), dpkg -L <pkg> (rpm -ql), apt-file search for uninstalled files. Security-only patching is unattended-upgrades with the security origin; there is no dnf history undo equivalent - /var/log/apt/history.log plus apt install pkg=version is the manual rollback."]
+  ],
+  practice:"Patch nights follow the same shape everywhere: snapshot or backup, preview the transaction, apply scoped errata, check needs-restarting, verify the application, record the dnf history ID in the change ticket. The history ID is your rollback handle - write it down before you leave.",
+  docs:["Red Hat: Managing software with the DNF tool (RHEL 10)","Red Hat: Considerations in adopting RHEL 10 - Software management (filelists and modularity changes)","man 8 dnf, man 8 rpm, man 8 needs-restarting"]
+},
+{
+  id:"s12", level:"Hard", mins:55, map:"RH124 ch14, RH134 ch11",
+  title:"Stand up an internal package mirror for an air-gapped estate",
+  role:"Production has no internet. You must serve a curated set of RPMs from one host over HTTP, sign the metadata expectations correctly, point clients at it, and prove a client can install from it with GPG checking on.",
+  brief:"This is the repository half of package management that RH124 introduces and every real environment depends on. It also drills file serving, SELinux contexts and firewall rules in a way that mirrors production work.",
+  setup:["sudo dnf install -y createrepo_c httpd","sudo systemctl enable --now httpd","sudo install -d /var/www/html/repo/local"],
+  tasks:[
+    {q:"Populate the repository directory with a handful of packages downloaded from an upstream repo, without installing them.",
+     hint:"Reuse the download technique from the patching drill and point it at the web root.",
+     sol:["sudo dnf download --resolve --alldeps --destdir=/var/www/html/repo/local httpd tree tmux","ls -1 /var/www/html/repo/local | head","du -sh /var/www/html/repo/local"],
+     check:"The directory contains several .rpm files"},
+    {q:"Generate the repository metadata, then inspect what was created.",
+     hint:"createrepo_c writes a repodata directory containing XML indexes.",
+     sol:["sudo createrepo_c /var/www/html/repo/local","ls -l /var/www/html/repo/local/repodata/","sudo createrepo_c --update /var/www/html/repo/local   # after adding packages later"],
+     check:"repodata/repomd.xml exists"},
+    {q:"Make the repository reachable over HTTP and prove it from a client perspective, dealing with whatever SELinux and firewall say.",
+     hint:"The web root already has the right SELinux type; a directory you created elsewhere would not. Test with curl before blaming anything.",
+     sol:["sudo firewall-cmd --permanent --add-service=http && sudo firewall-cmd --reload","ls -Z /var/www/html/repo | head","sudo restorecon -Rv /var/www/html/repo","curl -s http://localhost/repo/local/repodata/repomd.xml | head -5","curl -sI http://localhost/repo/local/ | head -1"],
+     check:"curl returns the repomd.xml content, not a 403"},
+    {q:"Write a client repository definition for it at /etc/yum.repos.d/local.repo with a clear id and name, enabled, and with gpgcheck deliberately configured - then explain your gpgcheck decision.",
+     hint:"Unsigned locally-built packages force a choice: disable gpgcheck for this repo only, or sign your packages. Never disable it globally.",
+     sol:["sudo tee /etc/yum.repos.d/local.repo > /dev/null << 'EOS'","[local]","name=Internal mirror - curated packages","baseurl=http://localhost/repo/local/","enabled=1","gpgcheck=1","gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release","repo_gpgcheck=0","EOS","sudo dnf clean all","sudo dnf repolist | grep -i local","sudo dnf --repo=local list available | head"],
+     check:"dnf repolist shows the local repo with a non-zero package count"},
+    {q:"Install a package explicitly from your repo only, with every other repo disabled, and prove where it came from.",
+     hint:"--disablerepo and --enablerepo accept globs. dnf info on an installed package reports the From repo field.",
+     sol:["sudo dnf --disablerepo='*' --enablerepo='local' install -y tree","dnf info tree | grep -Ei 'repo|from'","rpm -q tree --qf '%{NAME} %{VERSION} %{VENDOR}\\n'"],
+     check:"The install transaction shows the repository column as 'local'"},
+    {q:"Add one more package to the mirror and refresh the metadata correctly so clients see it without rebuilding the whole index.",
+     hint:"There is an incremental mode, and clients cache metadata - they need to be told to refresh.",
+     sol:["sudo dnf download --destdir=/var/www/html/repo/local vim-enhanced","sudo createrepo_c --update /var/www/html/repo/local","sudo dnf clean metadata","sudo dnf --refresh --repo=local list available | grep vim"],
+     check:"vim-enhanced appears in the local repo listing after the refresh"},
+    {q:"Inspect an RPM file directly without installing it: its metadata, its file list, its dependencies and its scriptlets.",
+     hint:"rpm -qp operates on a package FILE (-p) rather than an installed name.",
+     sol:["RPM=$(ls /var/www/html/repo/local/tree-*.rpm | head -1)","rpm -qpi \"$RPM\"","rpm -qpl \"$RPM\" | head","rpm -qpR \"$RPM\"","rpm -qp --scripts \"$RPM\"","rpm -K \"$RPM\"        # signature check"],
+     check:"rpm -K reports digests OK (and signature status)"},
+    {q:"Pin a package so routine updates never touch it, and document the exception.",
+     hint:"dnf has an exclude mechanism per-repo and globally in dnf.conf, plus the versionlock plugin.",
+     sol:["sudo dnf install -y python3-dnf-plugin-versionlock","sudo dnf versionlock add tree","sudo dnf versionlock list","sudo dnf update tree    # refused / excluded","# global alternative in /etc/dnf/dnf.conf:  exclude=kernel*","sudo dnf versionlock delete tree"],
+     check:"versionlock list shows the pinned package and the update is skipped"}
+  ],
+  distro:[
+    ["RHEL 10","createrepo_c now compresses non-database metadata with zstd instead of gzip and no longer generates SQLite databases by default (use --database if an old client needs them). Modular metadata is irrelevant - modularity is deprecated."],
+    ["RHEL 9","createrepo_c defaults to gzip and generates SQLite databases; modular repos may also require the module metadata to be merged with modifyrepo_c."],
+    ["Fedora 42","Same as RHEL 10 for createrepo_c; the client is DNF 5."],
+    ["Ubuntu 24.04","The equivalent is an apt repository: dpkg-scanpackages or reprepro / aptly, an InRelease file signed with gpg, and a client line in /etc/apt/sources.list.d/*.sources with a Signed-By key path. The concepts map one to one; the tooling does not."]
+  ],
+  practice:"Every regulated estate runs an internal mirror so that what was tested is exactly what gets installed, and so that a vendor pulling a package does not break a build at 3am. Curated mirror plus versionlock on kernel and database packages is the standard pattern.",
+  docs:["Red Hat: Managing software with the DNF tool (RHEL 10)","man 8 createrepo_c, man 5 dnf.conf, man 8 rpm (QUERY OPTIONS, -K signature check)"]
+},
+{
+  id:"s13", level:"Hard", mins:70, map:"RH134 ch5",
+  title:"/var/log filled the root filesystem at 03:00",
+  role:"The root filesystem is at 100%. Logging has stopped, the application is throwing write errors, and a new disk has just been attached to the VM. Move /var/log onto it with no data loss and make it survive reboot.",
+  brief:"The hardest part of storage work is not mkfs - it is doing a live migration of a directory that is being written to, and getting /etc/fstab right so the host boots afterwards. A wrong fstab entry is the classic way to make a VM unbootable.",
+  setup:["# attach a second virtual disk to the VM first (VirtualBox: Settings > Storage > add 5GB disk)","lsblk","# identify the new empty device, e.g. /dev/sdb - substitute it everywhere below"],
+  tasks:[
+    {q:"Prove where the space actually went before you add any disk: filesystem usage, inode usage, the largest directories under /var, and any deleted-but-open files still holding space.",
+     hint:"A filesystem can be full of inodes rather than bytes. Deleted files held open by a process do not show in du but do show in df - that gap is the tell.",
+     sol:["df -hT /","df -i /","sudo du -xh --max-depth=1 /var | sort -hr | head","sudo du -xh --max-depth=1 /var/log | sort -hr | head","sudo lsof +L1 2>/dev/null | head        # link count 0 = deleted but open"],
+     check:"You can explain the difference between df and du output on this box"},
+    {q:"Identify the new disk with certainty, confirm it is empty, and record its size and model.",
+     hint:"Never guess a device name. lsblk plus blkid plus the absence of a filesystem signature is the proof.",
+     sol:["lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT,MODEL","sudo blkid /dev/sdb || echo 'no signature - safe'","sudo parted /dev/sdb print 2>&1 | head","sudo wipefs /dev/sdb          # shows signatures without removing them"],
+     check:"blkid returns nothing for the target device"},
+    {q:"Create a GPT label and a single primary partition filling the disk, then make the kernel aware of it.",
+     hint:"parted in script mode (-s) is the reproducible form. The kernel may need to be told to re-read the table.",
+     sol:["sudo parted -s /dev/sdb mklabel gpt","sudo parted -s /dev/sdb mkpart logs xfs 1MiB 100%","sudo parted -s /dev/sdb print","sudo partprobe /dev/sdb","lsblk /dev/sdb"],
+     check:"lsblk shows /dev/sdb1 with the right size"},
+    {q:"Create an XFS filesystem with the label logs, and record its UUID.",
+     hint:"mkfs.xfs takes -L for a label. blkid or lsblk -f reports the UUID afterwards.",
+     sol:["sudo mkfs.xfs -L logs /dev/sdb1","sudo blkid /dev/sdb1","lsblk -f /dev/sdb","sudo xfs_info /dev/sdb1 | head -3"],
+     check:"blkid prints TYPE=xfs and a UUID"},
+    {q:"Migrate the existing /var/log content onto the new filesystem with all attributes preserved, while the system is running, and then mount it in place.",
+     hint:"Mount the new filesystem somewhere temporary, copy with attribute preservation, stop the loggers, re-sync the delta, then mount over /var/log and restart the loggers.",
+     sol:["sudo mkdir -p /mnt/newlogs && sudo mount /dev/sdb1 /mnt/newlogs","sudo rsync -aAXH /var/log/ /mnt/newlogs/","sudo systemctl stop rsyslog systemd-journald.socket systemd-journald","sudo rsync -aAXH --delete /var/log/ /mnt/newlogs/","sudo umount /mnt/newlogs","sudo mount /dev/sdb1 /var/log","sudo systemctl start systemd-journald rsyslog","df -hT /var/log; ls /var/log | head"],
+     check:"df shows /var/log on /dev/sdb1 and the old files are all present"},
+    {q:"Make the mount permanent using the UUID (never the device name), with sensible options, and validate the entry without rebooting.",
+     hint:"Mount options worth having on a log volume: defaults plus noatime. Validate with mount -a after unmounting, and with findmnt --verify.",
+     sol:["UUID=$(sudo blkid -s UUID -o value /dev/sdb1)","echo \"UUID=$UUID  /var/log  xfs  defaults,noatime  0 0\" | sudo tee -a /etc/fstab","sudo findmnt --verify --verbose","sudo umount /var/log && sudo mount -a && df -hT /var/log","sudo systemctl daemon-reload      # regenerate the .mount unit from fstab"],
+     check:"findmnt --verify reports success and mount -a remounts it"},
+    {q:"Explain and demonstrate why the device name is unsafe: show the by-uuid and by-id symlinks and what happens to sdX ordering.",
+     hint:"/dev/disk/by-uuid and /dev/disk/by-id are stable; /dev/sdX depends on probe order and can change when a controller or disk is added.",
+     sol:["ls -l /dev/disk/by-uuid/ | tail -5","ls -l /dev/disk/by-id/ | tail -5","lsblk -o NAME,UUID,SERIAL,MOUNTPOINT"],
+     check:"You can point at the by-uuid symlink that resolves to sdb1"},
+    {q:"Add 1 GiB of swap on a file (not a partition), activate it, verify, and make it permanent - then remove it cleanly.",
+     hint:"Swap files must be 0600 and preallocated without holes. XFS needs fallocate plus the right file type; mkswap then swapon.",
+     sol:["sudo fallocate -l 1G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=1024","sudo chmod 0600 /swapfile","sudo mkswap /swapfile","sudo swapon /swapfile","swapon --show; free -h","echo '/swapfile  none  swap  defaults  0 0' | sudo tee -a /etc/fstab","sudo swapoff /swapfile && sudo sed -i '/swapfile/d' /etc/fstab && sudo rm -f /swapfile"],
+     check:"swapon --show lists /swapfile with type file while it is active"},
+    {q:"Simulate the failure you fear: put a bad entry in fstab, see how the system reacts, and recover without a reboot.",
+     hint:"mount -a is the safe simulation. In a real boot failure, systemd drops to emergency mode and the recovery is to edit fstab from there - which is scenario 19.",
+     sol:["echo 'UUID=deadbeef-0000-0000-0000-000000000000 /mnt/bad xfs defaults 0 0' | sudo tee -a /etc/fstab","sudo mount -a ; echo rc=$?        # expect a failure","sudo findmnt --verify --verbose","sudo sed -i '/deadbeef/d' /etc/fstab","sudo mount -a && echo RECOVERED"],
+     check:"mount -a fails while the bad line is present and succeeds after removal"}
+  ],
+  distro:[
+    ["RHEL 10","XFS only for this drill - the XFS v4 on-disk format was removed, so filesystems created on RHEL 7 will not mount. XFS can grow but never shrink. Prebuilt RHEL 10 cloud images no longer have a separate /boot partition."],
+    ["RHEL 9","Identical tooling; XFS v4 still mountable."],
+    ["Fedora 42","Workstation installs on Btrfs with subvolumes, so 'move /var/log to another disk' is more often done with a subvolume than a second device. mkfs.xfs still works if you add a disk."],
+    ["Ubuntu 24.04","ext4 by default: mkfs.ext4 -L logs, tune2fs -l to inspect, resize2fs to grow, and ext4 CAN be shrunk offline. fstab syntax, findmnt and mount -a are identical. Ubuntu server images use LVM by default - check with lsblk before partitioning."]
+  ],
+  practice:"The professional sequence is: prove the cause, prepare the new volume, copy live, quiesce the writers, re-sync the delta, swap the mount, verify, then persist. Writing fstab by UUID and running findmnt --verify before you ever reboot is what separates a maintenance window from an outage.",
+  docs:["Red Hat: Managing storage devices (RHEL 10) / Managing file systems (RHEL 10)","man 8 parted, man 8 mkfs.xfs, man 5 fstab, man 8 findmnt, man 8 mkswap, man 8 swapon"]
+},
+{
+  id:"s14", level:"Hard", mins:60, map:"RH134 ch6, ch7",
+  title:"Grow a database volume without downtime",
+  role:"The database volume is at 92%. Two new disks are attached. You must extend the logical volume and its filesystem online, take a snapshot first so the change is reversible, and leave the volume group with room to grow again.",
+  brief:"LVM is the single most productive storage skill in enterprise Linux: it is how you grow storage without an outage. The ordering (pv, vg, lv, filesystem) and the -r shortcut are what this drill burns in.",
+  setup:["# attach two more virtual disks (e.g. /dev/sdc and /dev/sdd, 5GB each)","lsblk -o NAME,SIZE,TYPE,FSTYPE","sudo dnf install -y lvm2"],
+  tasks:[
+    {q:"Initialise both new disks as physical volumes and report the LVM view of them.",
+     hint:"pvcreate takes whole devices or partitions. The reporting commands are pvs (brief) and pvdisplay (verbose).",
+     sol:["sudo pvcreate /dev/sdc /dev/sdd","sudo pvs","sudo pvdisplay /dev/sdc | head -12","sudo pvs -o +pv_used,pv_free"],
+     check:"pvs lists both devices with no VG assigned yet"},
+    {q:"Create a volume group named vg_data from the first disk with a 8 MiB extent size, then report free extents.",
+     hint:"The physical extent size is set at vgcreate time with -s and cannot be changed trivially later.",
+     sol:["sudo vgcreate -s 8M vg_data /dev/sdc","sudo vgs","sudo vgdisplay vg_data | grep -E 'PE Size|Total PE|Free  PE|VG Size'"],
+     check:"vgdisplay shows PE Size 8.00 MiB and a Free PE count"},
+    {q:"Create a 2 GiB logical volume named lv_db, put XFS on it, mount it at /srv/db persistently, and write a marker file.",
+     hint:"lvcreate -L for an absolute size or -l for extents/percentages. Mount by the /dev/mapper path or the /dev/vg/lv symlink; in fstab either is stable.",
+     sol:["sudo lvcreate -n lv_db -L 2G vg_data","sudo mkfs.xfs /dev/vg_data/lv_db","sudo mkdir -p /srv/db","echo '/dev/mapper/vg_data-lv_db  /srv/db  xfs  defaults  0 0' | sudo tee -a /etc/fstab","sudo mount -a && df -hT /srv/db","sudo bash -c 'echo baseline > /srv/db/marker.txt'","lsblk -f /dev/sdc"],
+     check:"df shows /srv/db at ~2G and the marker file exists"},
+    {q:"Take a snapshot of lv_db so the next change can be reversed, and explain what the snapshot size controls.",
+     hint:"A snapshot is a copy-on-write volume sized for the expected amount of CHANGE, not the size of the origin. If it fills, it is dropped.",
+     sol:["sudo lvcreate -s -n lv_db_snap -L 512M /dev/vg_data/lv_db","sudo lvs -o +lv_size,origin,data_percent","sudo bash -c 'echo changed-after-snapshot > /srv/db/marker.txt'","sudo lvs vg_data/lv_db_snap -o lv_name,data_percent"],
+     check:"lvs shows lv_db_snap with origin lv_db and a rising data_percent"},
+    {q:"Extend the volume group with the second disk, then grow the logical volume to use all remaining free space AND grow the filesystem in one command.",
+     hint:"vgextend adds the PV. lvextend -l +100%FREE takes everything; -r resizes the filesystem for you.",
+     sol:["sudo vgextend vg_data /dev/sdd","sudo vgs","sudo lvextend -l +100%FREE -r /dev/vg_data/lv_db","df -hT /srv/db","sudo xfs_info /srv/db | head -3","# the two-step equivalent, for when -r is unavailable:","# sudo lvextend -L +2G /dev/vg_data/lv_db && sudo xfs_growfs /srv/db"],
+     check:"df shows the larger size while the filesystem stayed mounted the whole time"},
+    {q:"Roll back to the snapshot, confirm the marker file returned to its original content, and explain when the merge actually takes effect.",
+     hint:"lvconvert --merge merges the snapshot back. For a mounted origin, the merge is deferred until the next activation - unmount and reactivate to make it happen now.",
+     sol:["sudo umount /srv/db","sudo lvconvert --merge /dev/vg_data/lv_db_snap","sudo lvchange -an vg_data/lv_db && sudo lvchange -ay vg_data/lv_db","sudo mount /srv/db","cat /srv/db/marker.txt        # expect: baseline","sudo lvs"],
+     check:"marker.txt reads baseline again and the snapshot volume is gone"},
+    {q:"Report the full stack from device to mount point in one view, and locate the LVM metadata backups on disk.",
+     hint:"lsblk shows the tree; lvs -o+devices maps LVs to PVs; LVM writes metadata archives automatically.",
+     sol:["lsblk","sudo lvs -o lv_name,vg_name,lv_size,devices","sudo pvs -o pv_name,vg_name,pv_size,pv_free","ls /etc/lvm/archive/ | tail","sudo vgcfgbackup vg_data && ls /etc/lvm/backup/"],
+     check:"You can trace /srv/db back to both /dev/sdc and /dev/sdd"},
+    {q:"Decommission cleanly: unmount, remove the logical volume, remove the volume group, and release one physical volume back to the system.",
+     hint:"Reverse order of creation. Remember to remove the fstab line first, or the next boot fails.",
+     sol:["sudo umount /srv/db","sudo sed -i '\\#/srv/db#d' /etc/fstab","sudo lvremove -y /dev/vg_data/lv_db","sudo vgremove -y vg_data","sudo pvremove /dev/sdc /dev/sdd","sudo wipefs -a /dev/sdc /dev/sdd","lsblk -f"],
+     check:"lsblk shows both disks with no FSTYPE and pvs returns nothing"}
+  ],
+  distro:[
+    ["RHEL 10","kmod-kvdo was replaced by the in-kernel dm-vdo module and VDO sysfs parameters were removed - VDO is managed through LVM (lvcreate --type vdo). Stratis remains available as the higher-level alternative to raw LVM."],
+    ["RHEL 9","VDO via kmod-kvdo and the vdo command still exists alongside LVM-VDO. Everything else in this drill is identical."],
+    ["Fedora 42","LVM identical. Workstation defaults to Btrfs, whose subvolumes and snapshots solve a similar problem differently - do not mix the two mental models."],
+    ["Ubuntu 24.04","LVM is identical (same lvm2 tooling) and Ubuntu Server installs on LVM by default with a volume group named ubuntu-vg. With ext4 use resize2fs instead of xfs_growfs, and remember ext4 can be shrunk offline while XFS cannot be shrunk at all."]
+  ],
+  practice:"Snapshot, then extend, then verify, then release the snapshot - that is the change-controlled sequence. And always leave free extents in the volume group: a VG at 100% allocated means your next emergency needs a new disk before you can even take a snapshot.",
+  docs:["Red Hat: Configuring and managing logical volumes (RHEL 10)","man 8 lvcreate, man 8 lvextend, man 8 lvconvert, man 8 vgextend, man 8 xfs_growfs, man 8 resize2fs"]
+},
+{
+  id:"s15", level:"Hard", mins:60, map:"RH134 ch8",
+  title:"Serve and consume shared storage over NFS",
+  role:"Three application nodes need a common /srv/shared and home directories that follow users between hosts. Build the export on this host, mount it from the client side, then convert the static mount to an on-demand automount.",
+  brief:"Network file services combine everything already drilled: permissions, firewall, SELinux booleans, fstab and systemd. Autofs is the part people skip and then fail on, because the map syntax has to be exact.",
+  setup:["sudo dnf install -y nfs-utils autofs","sudo install -d -m 2775 /srv/nfsshare","sudo bash -c 'echo hello-from-server > /srv/nfsshare/README'"],
+  tasks:[
+    {q:"Export /srv/nfsshare read-write to the 192.168.56.0/24 network with root squashing, start the server, and confirm the export is live.",
+     hint:"/etc/exports syntax is path, then client(options) with NO space between them. exportfs -r re-reads it; -v lists what is live.",
+     sol:["sudo tee /etc/exports.d/drill.exports > /dev/null << 'EOS'","/srv/nfsshare  192.168.56.0/24(rw,sync,root_squash)","EOS","sudo systemctl enable --now nfs-server","sudo exportfs -rav","sudo exportfs -v","showmount -e localhost"],
+     check:"exportfs -v lists the path with the rw and root_squash options"},
+    {q:"Open the firewall for NFSv4 and verify from the network side which ports are actually listening.",
+     hint:"NFSv4 needs only 2049; the nfs service definition in firewalld covers it. rpcbind and mountd matter only for NFSv3.",
+     sol:["sudo firewall-cmd --permanent --add-service=nfs","sudo firewall-cmd --permanent --add-service={nfs3,mountd,rpc-bind}   # only if v3 is required","sudo firewall-cmd --reload","sudo firewall-cmd --list-services","sudo ss -tlnp | grep -E ':2049|:111'"],
+     check:"Port 2049 is listening and nfs appears in the firewalld service list"},
+    {q:"Mount the export from the client side (localhost is fine for the drill), confirm the NFS version negotiated, and write a file as an unprivileged user.",
+     hint:"mount -t nfs, then findmnt or the mount output shows vers=. root_squash means root writes land as nobody.",
+     sol:["sudo mkdir -p /mnt/shared","sudo mount -t nfs localhost:/srv/nfsshare /mnt/shared","findmnt -t nfs4,nfs","mount | grep nfs","sudo -u nadia touch /mnt/shared/from-nadia 2>&1","sudo touch /mnt/shared/from-root; ls -l /mnt/shared"],
+     check:"findmnt shows vers=4.2 and the root-created file is owned by nobody/nfsnobody"},
+    {q:"Make the mount persistent with the correct options for a network filesystem, and explain each option you chose.",
+     hint:"_netdev delays the mount until the network is up; soft vs hard changes failure behaviour; noatime reduces chatter. Validate before rebooting.",
+     sol:["echo 'localhost:/srv/nfsshare  /mnt/shared  nfs  _netdev,rw,hard,timeo=600,retrans=2,noatime  0 0' | sudo tee -a /etc/fstab","sudo umount /mnt/shared && sudo mount -a && findmnt /mnt/shared","sudo findmnt --verify --verbose","systemctl list-units --type=mount | grep shared"],
+     check:"findmnt shows the mount with _netdev and mount -a is clean"},
+    {q:"Replace the static mount with an on-demand automount of the same export under /misc/shared, and prove it mounts only when accessed.",
+     hint:"autofs needs a master map entry pointing at a map file. The indirect map key is the subdirectory name.",
+     sol:["sudo sed -i '\\#/mnt/shared#d' /etc/fstab && sudo umount /mnt/shared","echo '/misc  /etc/auto.misc  --timeout=60' | sudo tee /etc/auto.master.d/misc.autofs","echo 'shared  -rw,sync,_netdev  localhost:/srv/nfsshare' | sudo tee /etc/auto.misc","sudo systemctl enable --now autofs","findmnt /misc/shared ; echo 'not mounted yet ^'","ls /misc/shared            # this access triggers the mount","findmnt /misc/shared"],
+     check:"The mount appears only after the directory is accessed and disappears after the timeout"},
+    {q:"Configure an indirect map so that /home/guests/<user> automounts each users export, using a wildcard key.",
+     hint:"The wildcard key is * and the substitution in the location is &.",
+     sol:["echo '/home/guests  /etc/auto.guests' | sudo tee /etc/auto.master.d/guests.autofs","echo '*  -rw,sync  localhost:/srv/nfsshare/&' | sudo tee /etc/auto.guests","sudo install -d /srv/nfsshare/nadia && sudo chown nadia:nadia /srv/nfsshare/nadia","sudo systemctl restart autofs","ls /home/guests/nadia","findmnt | grep guests"],
+     check:"ls /home/guests/nadia succeeds and findmnt shows the auto-mounted path"},
+    {q:"SELinux is blocking home directories served over NFS. Find the boolean that governs it, turn it on persistently, and show its state before and after.",
+     hint:"getsebool -a piped through grep nfs finds it. The -P flag makes a boolean survive reboot.",
+     sol:["getsebool -a | grep -i nfs","sudo setsebool -P use_nfs_home_dirs on","getsebool use_nfs_home_dirs","sudo semanage boolean -l | grep nfs_home"],
+     check:"getsebool reports use_nfs_home_dirs --> on"},
+    {q:"Diagnose a failed mount end to end: check the server export, the network path, the client error and the logs, in that order.",
+     hint:"showmount from the client, ss on the server, mount with -v, then the journal on both sides.",
+     sol:["showmount -e localhost","rpcinfo -p localhost | head","sudo mount -v -t nfs localhost:/wrong/path /mnt/shared ; echo rc=$?","sudo journalctl -u nfs-server --since '10 min ago' --no-pager | tail","sudo journalctl -t kernel --grep=nfs --no-pager | tail"],
+     check:"You can state whether a given failure is export, firewall, path or permission"}
+  ],
+  distro:[
+    ["RHEL 10","NFSv4.2 is the default. Exports can live in /etc/exports or /etc/exports.d/*.exports - the drop-in directory is preferred for automation. GFS2 and the Resilient Storage add-on were removed in RHEL 10."],
+    ["RHEL 9","Identical for NFS and autofs."],
+    ["Fedora 42","Identical; nfs-utils and autofs are not installed by default."],
+    ["Ubuntu 24.04","Server package is nfs-kernel-server, client is nfs-common; the service is nfs-kernel-server.service. /etc/exports syntax is the same. AppArmor rather than SELinux, so there is no boolean step - but check /etc/apparmor.d if a mount is denied. autofs works identically."]
+  ],
+  practice:"_netdev plus hard mounts is the default for anything a service depends on: a soft mount silently returns IO errors to the application, which corrupts data instead of blocking. Autofs is standard for user home directories because it removes the boot-order dependency entirely.",
+  docs:["Red Hat: Managing file systems (RHEL 10) - Mounting NFS shares / Exporting NFS shares","man 5 exports, man 8 exportfs, man 5 nfs, man 5 autofs, man 5 auto.master"]
+},
+{
+  id:"s16", level:"Core", mins:50, map:"RH134 ch2",
+  title:"Automate the housekeeping nobody wants to do manually",
+  role:"Three recurring jobs are needed: a nightly database dump at 02:15 on weekdays, a purge of files older than 7 days from a scratch directory every hour, and a one-off cache warm-up 20 minutes from now. Failures must be visible.",
+  brief:"cron and systemd timers both solve this, and you are expected to know when each is correct. Timers give you journal integration, dependencies and randomised delays; cron gives you five fields and forty years of muscle memory.",
+  setup:["sudo dnf install -y cronie at","sudo systemctl enable --now crond atd","sudo install -d /srv/scratch /srv/dumps"],
+  tasks:[
+    {q:"Schedule the hourly purge as a personal cron job for your own user, and show where it was stored.",
+     hint:"crontab -e edits your own table; -l lists it. Personal crontabs have five time fields and no user field.",
+     sol:["crontab -e","# add:  17 * * * * /usr/bin/find /srv/scratch -type f -mtime +7 -delete","crontab -l","sudo ls -l /var/spool/cron/","sudo cat /var/spool/cron/$USER"],
+     check:"crontab -l shows the entry and the file exists under /var/spool/cron"},
+    {q:"Schedule the weekday database dump as a system job with an explicit user, output redirected, and an environment that does not depend on your login shell.",
+     hint:"System jobs go in /etc/cron.d/ and have SIX fields - the sixth is the user. cron runs with a minimal PATH, so use absolute paths.",
+     sol:["sudo tee /etc/cron.d/dbdump > /dev/null << 'EOS'","SHELL=/bin/bash","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin","MAILTO=root","15 2 * * 1-5  root  /usr/local/bin/dbdump.sh >> /var/log/dbdump.log 2>&1","EOS","sudo chmod 0644 /etc/cron.d/dbdump","sudo systemctl restart crond","sudo journalctl -u crond --since '5 min ago' --no-pager | tail"],
+     check:"The file is mode 0644 with six fields and crond logs no parse error"},
+    {q:"Explain and demonstrate the cron time syntax: every 5 minutes, every weekday at 08:00, the 1st of every month, and using the @ shorthands.",
+     hint:"Step values use /, ranges use -, lists use commas. @reboot, @daily, @weekly are the shorthands.",
+     sol:["# */5 * * * *        every 5 minutes","# 0 8 * * 1-5        08:00 Mon-Fri","# 0 3 1 * *          03:00 on the 1st","# @reboot            once at boot","# @daily             = 0 0 * * *","ls /etc/cron.{hourly,daily,weekly,monthly}","cat /etc/crontab        # the format reference lives here","sudo run-parts --test /etc/cron.daily"],
+     check:"You can read /etc/crontab and explain each of the five fields"},
+    {q:"Queue the one-off cache warm-up 20 minutes from now, inspect the queue, read the job body, then cancel it.",
+     hint:"at reads the command from stdin; atq lists, at -c shows the job, atrm removes.",
+     sol:["echo '/usr/bin/systemctl reload httpd' | at now + 20 minutes","atq","at -c $(atq | awk '{print $1}' | head -1) | tail -20","atrm $(atq | awk '{print $1}' | head -1)","atq"],
+     check:"atq lists the job, then is empty after atrm"},
+    {q:"Reimplement the hourly purge as a systemd timer instead: a service unit that does the work and a timer unit that schedules it every hour with a 5 minute random delay and catch-up after downtime.",
+     hint:"Two files with the same stem. OnCalendar sets the schedule, RandomizedDelaySec spreads load, Persistent=true runs a missed job after boot.",
+     sol:["sudo tee /etc/systemd/system/scratch-purge.service > /dev/null << 'EOS'","[Unit]","Description=Purge scratch files older than 7 days","[Service]","Type=oneshot","ExecStart=/usr/bin/find /srv/scratch -type f -mtime +7 -delete","EOS","sudo tee /etc/systemd/system/scratch-purge.timer > /dev/null << 'EOS'","[Unit]","Description=Hourly scratch purge","[Timer]","OnCalendar=hourly","RandomizedDelaySec=5m","Persistent=true","[Install]","WantedBy=timers.target","EOS","sudo systemctl daemon-reload","sudo systemctl enable --now scratch-purge.timer"],
+     check:"systemctl is-enabled scratch-purge.timer returns enabled"},
+    {q:"Verify the timer: next run time, last result, the calendar expression parsed, and force one immediate run.",
+     hint:"list-timers shows NEXT and LAST. systemd-analyze calendar validates any OnCalendar expression before you commit it.",
+     sol:["systemctl list-timers --all | grep -E 'NEXT|scratch'","systemd-analyze calendar hourly","systemd-analyze calendar 'Mon-Fri 02:15'","sudo systemctl start scratch-purge.service","sudo journalctl -u scratch-purge.service --no-pager | tail"],
+     check:"list-timers shows a NEXT time and the manual run appears in the journal"},
+    {q:"Make temporary directories self-cleaning with systemd-tmpfiles instead of a cron job, and test the rule without waiting.",
+     hint:"A line in /etc/tmpfiles.d defines type, path, mode, owner, group and age. The --clean action applies the age rules now.",
+     sol:["sudo tee /etc/tmpfiles.d/scratch.conf > /dev/null << 'EOS'","d /srv/scratch 0770 root appops 7d","EOS","sudo systemd-tmpfiles --create /etc/tmpfiles.d/scratch.conf","sudo touch -d '10 days ago' /srv/scratch/old.tmp","sudo systemd-tmpfiles --clean /etc/tmpfiles.d/scratch.conf","ls -l /srv/scratch"],
+     check:"The 10-day-old file is removed by --clean"},
+    {q:"Restrict who may use cron and at on this host, and prove the restriction works.",
+     hint:"cron.allow / cron.deny and at.allow / at.deny in /etc. If the allow file exists, only listed users may schedule.",
+     sol:["echo 'nadia' | sudo tee /etc/cron.allow","sudo chmod 0600 /etc/cron.allow","sudo -u ravi crontab -l ; echo rc=$?     # denied","sudo -u nadia crontab -l ; echo rc=$?    # permitted","echo 'nadia' | sudo tee /etc/at.allow","sudo -u ravi at now + 1 hour </dev/null ; echo rc=$?"],
+     check:"ravi is refused with 'not allowed to use this program'"}
+  ],
+  distro:[
+    ["RHEL 10","cronie is installed but systemd timers are the strategic choice: they get journal entries, dependency ordering and Persistent= catch-up. anacron behaviour for /etc/cron.daily is provided through systemd timers in newer builds."],
+    ["RHEL 9","Identical. Both mechanisms present."],
+    ["Fedora 42","cronie is NOT installed by default - dnf install cronie. Timers are the native path."],
+    ["Ubuntu 24.04","cron is installed by default; at is not (apt install at). The system crontab drop-in directory is /etc/cron.d with the same six-field syntax. Systemd timers are identical."]
+  ],
+  practice:"The rule of thumb used in production: if the job needs to run inside a service dependency graph, needs its output in the journal, or must catch up after downtime, use a timer. If it is a one-line command a human will read in six months, cron is still fine. Always redirect output or you will never hear about failures.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Automating system tasks","man 5 crontab, man 1 crontab, man 1 at, man 5 systemd.timer, man 7 systemd.time, man 5 tmpfiles.d"]
+},
+{
+  id:"s17", level:"Hard", mins:70, map:"RH134 ch1",
+  title:"Write the log triage script the team will actually use",
+  role:"You are asked to produce one script that takes a log file and a threshold, reports the top offending IPs, flags anything over the threshold, and exits with a status that a monitoring system can act on.",
+  brief:"This is the scripting and text-processing half of RH134 in one artefact: the text pipeline (grep, cut, awk, sort, uniq), loops and conditionals, positional parameters, exit codes, and the safety flags that separate a script from a liability.",
+  setup:["sudo bash -c 'for i in $(seq 1 300); do printf \"%s - - [%s] \\\"GET /x HTTP/1.1\\\" %s 512\\n\" \"10.0.0.$((RANDOM%8))\" \"$(date +%d/%b/%Y:%H:%M:%S)\" \"$(shuf -e 200 200 200 404 500 -n1)\"; done > /var/log/drill-access.log'","wc -l /var/log/drill-access.log"],
+  tasks:[
+    {q:"Build the pipeline interactively first: extract the client IP from each line, count occurrences, and print the top five with counts.",
+     hint:"The IP is field 1. uniq -c only counts adjacent duplicates, so sort first. Then sort numerically, descending.",
+     sol:["awk '{print $1}' /var/log/drill-access.log | sort | uniq -c | sort -nr | head -5","# cut equivalent:","cut -d' ' -f1 /var/log/drill-access.log | sort | uniq -c | sort -rn | head -5"],
+     check:"You get five lines of 'count IP' ordered by count"},
+    {q:"Count HTTP 5xx responses, extract only the timestamp and status of those lines, and show the distinct status codes with counts.",
+     hint:"Use an extended regex anchored on the status field position, or let awk test the field numerically.",
+     sol:["grep -cE '\" 5[0-9]{2} ' /var/log/drill-access.log","awk '$9 ~ /^5/ {print $4, $9}' /var/log/drill-access.log | head","awk '{print $9}' /var/log/drill-access.log | sort | uniq -c | sort -nr","awk '$9>=500 {n++} END {print n+0, \"server errors\"}' /var/log/drill-access.log"],
+     check:"The status histogram shows 200, 404 and 500 with counts"},
+    {q:"Practise the three text editors of the exam: use sed to rewrite a value in place with a backup, use tr and cut for field surgery, and use grep -o to extract just the matches.",
+     hint:"sed -i.bak edits in place and keeps a copy. grep -o prints only the matched part, one per line.",
+     sol:["sudo sed -i.bak 's#/x#/index.html#g' /var/log/drill-access.log","diff <(head -2 /var/log/drill-access.log.bak) <(head -2 /var/log/drill-access.log)","grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+' /var/log/drill-access.log | sort -u","cut -d' ' -f1,9 /var/log/drill-access.log | tr ' ' ',' | head -3"],
+     check:"The .bak file still contains /x and the live file contains /index.html"},
+    {q:"Write /usr/local/bin/logtriage.sh taking two arguments (logfile, error threshold). It must fail loudly on a missing or unreadable file, on a missing argument, and on any unset variable.",
+     hint:"set -euo pipefail at the top, a usage function, and explicit argument count checking. Exit codes: 2 for usage, 1 for threshold breach, 0 for clean.",
+     sol:["sudo tee /usr/local/bin/logtriage.sh > /dev/null << 'EOS'","#!/usr/bin/env bash","set -euo pipefail","","usage() { echo \"usage: ${0##*/} <logfile> <error-threshold>\" >&2; exit 2; }","","[[ $# -eq 2 ]] || usage","LOG=$1; THRESHOLD=$2","[[ -r $LOG ]] || { echo \"cannot read $LOG\" >&2; exit 2; }","[[ $THRESHOLD =~ ^[0-9]+$ ]] || usage","","errors=$(awk '$9 ~ /^5/ {n++} END {print n+0}' \"$LOG\")","echo \"file:      $LOG\"","echo \"lines:     $(wc -l < \"$LOG\")\"","echo \"5xx count: $errors  (threshold $THRESHOLD)\"","echo \"top talkers:\"","awk '{print $1}' \"$LOG\" | sort | uniq -c | sort -nr | head -5 | while read -r count ip; do","    printf '  %-16s %6s\\n' \"$ip\" \"$count\"","done","","if (( errors > THRESHOLD )); then","    echo \"BREACH: $errors server errors exceeds $THRESHOLD\" >&2","    exit 1","fi","echo OK","EOS","sudo chmod 0755 /usr/local/bin/logtriage.sh"],
+     check:"bash -n /usr/local/bin/logtriage.sh reports no syntax errors"},
+    {q:"Test every exit path and prove the exit codes, including the failure modes.",
+     hint:"echo $? immediately after each run. Test: no args, unreadable file, low threshold, high threshold.",
+     sol:["logtriage.sh ; echo rc=$?                                   # 2","logtriage.sh /nope 5 ; echo rc=$?                           # 2","logtriage.sh /var/log/drill-access.log 1 ; echo rc=$?       # 1","logtriage.sh /var/log/drill-access.log 9999 ; echo rc=$?    # 0","bash -n /usr/local/bin/logtriage.sh && echo SYNTAX OK","bash -x /usr/local/bin/logtriage.sh /var/log/drill-access.log 5 2>&1 | head -20"],
+     check:"All four exit codes match 2, 2, 1, 0"},
+    {q:"Extend the script idea in the shell: loop over every user with a UID of 1000 or above and report their shell, home directory size and last login, skipping anyone with nologin.",
+     hint:"Read /etc/passwd with IFS=: in a while loop. Use continue to skip. lastlog or last reports logins.",
+     sol:["while IFS=: read -r user _ uid _ _ home shell; do","    (( uid >= 1000 )) || continue","    [[ $shell == */nologin || $shell == */false ]] && continue","    size=$(sudo du -sh \"$home\" 2>/dev/null | cut -f1)","    printf '%-12s %-16s %-6s %s\\n' \"$user\" \"$shell\" \"${size:-n/a}\" \"$(lastlog -u \"$user\" | tail -1 | awk '{print $NF}')\"","done < /etc/passwd"],
+     check:"Only real login users are listed, with sizes"},
+    {q:"Demonstrate the three quoting behaviours that break scripts: unquoted variables with spaces, single versus double quotes, and command substitution inside a string.",
+     hint:"Create a file with a space in its name and try to stat it both ways.",
+     sol:["f='/var/tmp/my file.txt'; touch \"$f\"","stat -c '%n' $f     # breaks: two arguments","stat -c '%n' \"$f\"   # works","name=world; echo \"hello $name\"; echo 'hello $name'","echo \"today is $(date +%F)\"","printf '%q\\n' \"$f\"  # shows the shell-safe form"],
+     check:"You can state why the unquoted form fails"},
+    {q:"Make the script safe to run concurrently and clean up after itself, using a temporary file and a trap.",
+     hint:"mktemp creates the file safely; trap removes it on EXIT regardless of how the script ends.",
+     sol:["tmp=$(mktemp /var/tmp/triage.XXXXXX)","trap 'rm -f \"$tmp\"' EXIT INT TERM","awk '{print $1}' /var/log/drill-access.log | sort | uniq -c > \"$tmp\"","wc -l \"$tmp\"","# flock for a single-instance guarantee:","flock -n /var/tmp/triage.lock -c '/usr/local/bin/logtriage.sh /var/log/drill-access.log 5' ; echo rc=$?"],
+     check:"The temp file is gone after the shell exits"},
+    {q:"Wire the script into the scheduler you built in the previous scenario so it runs every 15 minutes and a breach is visible in the journal.",
+     hint:"Reuse the timer pattern. A non-zero exit makes the unit fail, which is exactly the signal you want.",
+     sol:["sudo tee /etc/systemd/system/logtriage.service > /dev/null << 'EOS'","[Unit]","Description=Access log triage","[Service]","Type=oneshot","ExecStart=/usr/local/bin/logtriage.sh /var/log/drill-access.log 5","EOS","sudo tee /etc/systemd/system/logtriage.timer > /dev/null << 'EOS'","[Timer]","OnCalendar=*:0/15","[Install]","WantedBy=timers.target","EOS","sudo systemctl daemon-reload && sudo systemctl enable --now logtriage.timer","sudo systemctl start logtriage.service; systemctl status logtriage.service --no-pager | head","sudo journalctl -u logtriage.service --no-pager | tail"],
+     check:"The unit shows failed with status 1 when the threshold is breached"}
+  ],
+  distro:[
+    ["RHEL 10","bash 5.x, GNU coreutils and GNU awk behave as shown. /usr/bin/env bash in the shebang is the portable form."],
+    ["RHEL 9","Identical."],
+    ["Fedora 42","Identical."],
+    ["Ubuntu 24.04","/bin/sh is dash, NOT bash - a script with bashisms and a #!/bin/sh shebang fails on Ubuntu and works on RHEL. This is the single most common portability bug. Always use #!/usr/bin/env bash or #!/bin/bash when you use [[ ]], arrays or process substitution. mawk is the default awk; install gawk if you need GNU extensions."]
+  ],
+  practice:"set -euo pipefail, quoted variables, a usage function and meaningful exit codes are the four things reviewers look for. A script that prints an error and exits 0 is worse than no script, because the scheduler will report success forever.",
+  docs:["Red Hat: Configuring basic system settings (RHEL 10) - Working with the shell / Automating tasks","man 1 bash (Parameter Expansion, EXPANSION, trap), man 1 awk, man 1 sed, man 1 grep, man 1 mktemp, man 1 flock"]
+},
+{
+  id:"s18", level:"Hard", mins:60, map:"RH134 ch4",
+  title:"The web server works on port 80 and nowhere else",
+  role:"The application team moved the site to port 8404 and its content to /webdata. Permissions look correct, the config is valid, the firewall is open, and it still returns 503. SELinux is enforcing.",
+  brief:"SELinux is where correct-looking systems fail, and the RHCSA-level skill is not theory - it is the loop: read the denial, decide whether it is a label, a port or a boolean, fix it with semanage, and restore. Never by disabling SELinux.",
+  setup:["sudo dnf install -y httpd policycoreutils-python-utils setroubleshoot-server","sudo install -d /webdata && echo '<h1>drill</h1>' | sudo tee /webdata/index.html","sudo sed -i 's/^Listen 80/Listen 8404/' /etc/httpd/conf/httpd.conf","sudo sed -i 's#^DocumentRoot.*#DocumentRoot \"/webdata\"#' /etc/httpd/conf/httpd.conf","sudo systemctl restart httpd   # expect failure"],
+  tasks:[
+    {q:"Confirm SELinux is the cause rather than a permissions or config problem: show the mode, the config file setting, and the denial record.",
+     hint:"getenforce for the live mode, /etc/selinux/config for the boot mode, and the audit log or journal for AVC denials. Never change the mode as a fix.",
+     sol:["getenforce; sestatus","grep -E '^SELINUX=' /etc/selinux/config","sudo ausearch -m AVC -ts recent | tail -30","sudo journalctl -t setroubleshoot --since '10 min ago' --no-pager | tail","sudo grep -i denied /var/log/audit/audit.log | tail -5"],
+     check:"You can quote an AVC line naming httpd_t and the denied action"},
+    {q:"Fix the port problem: show which ports the httpd type is allowed to bind, then add 8404 permanently.",
+     hint:"semanage port -l lists the labelled ports; -a adds one with the correct type. -m modifies an existing label.",
+     sol:["sudo semanage port -l | grep -E '^http_port_t'","sudo semanage port -a -t http_port_t -p tcp 8404","sudo semanage port -l | grep 8404","sudo systemctl restart httpd && systemctl is-active httpd"],
+     check:"http_port_t now includes 8404 and httpd starts"},
+    {q:"Fix the content problem: compare the SELinux context of /webdata with /var/www/html, then relabel it correctly and permanently.",
+     hint:"ls -Z compares contexts. chcon changes it until the next relabel; semanage fcontext plus restorecon is the persistent form. Use a regex covering the directory and everything under it.",
+     sol:["ls -Zd /webdata /var/www/html","ls -Z /webdata","sudo semanage fcontext -a -t httpd_sys_content_t '/webdata(/.*)?'","sudo restorecon -Rv /webdata","ls -Zd /webdata; ls -Z /webdata/index.html","curl -s http://localhost:8404/ | head"],
+     check:"The context is httpd_sys_content_t and curl returns the page"},
+    {q:"Prove the difference between chcon and semanage fcontext by forcing a relabel.",
+     hint:"Apply a context with chcon, then run restorecon and watch it revert to what the policy database says.",
+     sol:["sudo chcon -t samba_share_t /webdata/index.html","ls -Z /webdata/index.html","sudo restorecon -v /webdata/index.html","ls -Z /webdata/index.html      # back to httpd_sys_content_t","sudo semanage fcontext -l | grep webdata"],
+     check:"restorecon reverts the chcon change, demonstrating which one is persistent"},
+    {q:"The application now needs to make outbound database connections and write to a directory. Find and set the correct booleans, persistently.",
+     hint:"getsebool -a and semanage boolean -l describe them. -P makes the change survive reboot; without it, the next reboot breaks the app.",
+     sol:["getsebool -a | grep httpd | head -20","sudo semanage boolean -l | grep -E 'httpd_can_network_connect(_db)?'","sudo setsebool -P httpd_can_network_connect_db on","sudo setsebool -P httpd_unified on","getsebool httpd_can_network_connect_db"],
+     check:"semanage boolean -l shows the boolean as on in both current and persistent columns"},
+    {q:"Give the web server a writable upload directory with the correct write-capable type, and verify a write actually succeeds.",
+     hint:"Read-only content and writable content have different types. The writable one is httpd_sys_rw_content_t.",
+     sol:["sudo install -d -o apache -g apache /webdata/uploads","sudo semanage fcontext -a -t httpd_sys_rw_content_t '/webdata/uploads(/.*)?'","sudo restorecon -Rv /webdata/uploads","ls -Zd /webdata/uploads","sudo -u apache touch /webdata/uploads/test && echo WRITE OK"],
+     check:"The directory is httpd_sys_rw_content_t and the apache user can write"},
+    {q:"Read a denial the professional way: translate a raw AVC into a human explanation and into the suggested policy, and explain why you would not blindly apply the suggestion.",
+     hint:"ausearch feeds audit2allow; sealert gives the human explanation. audit2allow -M generates a module - reading it is mandatory, applying it is a decision.",
+     sol:["sudo ausearch -m AVC -ts recent | audit2why | tail -20","sudo ausearch -m AVC -ts recent | audit2allow -w","sudo ausearch -m AVC -ts recent | audit2allow -M mydrill","cat mydrill.te        # READ THIS before installing","# sudo semodule -i mydrill.pp    # only if the rule is genuinely correct","sudo semodule -l | head"],
+     check:"You can read mydrill.te and state exactly what permission it would grant"},
+    {q:"Show how you would diagnose the same class of failure if the whole system were suspected: switch to permissive temporarily, confirm the app works, and switch back - explaining why this is a diagnostic, not a fix.",
+     hint:"setenforce 0 is runtime only; /etc/selinux/config controls boot. Permissive still logs denials, which is exactly what makes it a useful diagnostic.",
+     sol:["sudo setenforce 0; getenforce","curl -sI http://localhost:8404/ | head -1","sudo ausearch -m AVC -ts recent | tail   # denials still logged in permissive","sudo setenforce 1; getenforce","# permanent relabel after a mass-context problem:","# sudo touch /.autorelabel && sudo reboot"],
+     check:"getenforce returns Permissive then Enforcing, and denials were still recorded"}
+  ],
+  distro:[
+    ["RHEL 10","SELinux targeted policy enforcing by default. In RHEL 10.1 policy modules for EPEL packages moved to selinux-policy-targeted-extra in the CodeReady Linux Builder repository. Otherwise identical."],
+    ["RHEL 9","Identical workflow and command set."],
+    ["Fedora 42","Identical - Fedora is the best free environment to drill SELinux, because it carries the same targeted policy as RHEL."],
+    ["Ubuntu 24.04","AppArmor, not SELinux: profiles in /etc/apparmor.d, aa-status to list, aa-complain and aa-enforce to switch a single profile, and denials in journalctl -k with apparmor=DENIED. Path-based rather than label-based, so there is no restorecon or file-context concept - do this drill on Fedora."]
+  ],
+  practice:"The industry rule is absolute: SELINUX=disabled never appears in a production build sheet, because re-enabling it later requires a full filesystem relabel and a reboot. The accepted loop is ausearch -> audit2why -> semanage (port | fcontext | boolean) -> restorecon, and a custom module only when policy genuinely has a gap.",
+  docs:["Red Hat: Using SELinux (RHEL 10)","man 8 semanage, man 8 semanage-fcontext, man 8 semanage-port, man 8 restorecon, man 8 setsebool, man 1 audit2allow, man 8 ausearch"]
+},
+{
+  id:"s19", level:"Hard", mins:55, map:"RH134 ch9",
+  title:"A host will not boot and nobody has the root password",
+  role:"After a change window a server drops to an emergency shell. The engineer who made the change has left. You have console access only - no SSH, no password.",
+  brief:"Boot recovery is the highest-value scenario in the entire syllabus because it is the one you cannot improvise. Practise it on a disposable VM until the keystrokes are automatic, including the SELinux relabel step people forget.",
+  setup:["# do this in a VM you can snapshot. Take a snapshot FIRST.","# then break it deliberately:","echo 'UUID=00000000-0000-0000-0000-000000000000 /data xfs defaults 0 0' | sudo tee -a /etc/fstab","sudo reboot"],
+  tasks:[
+    {q:"From the emergency shell, work out why the boot stopped: read the failed units and the journal for this boot.",
+     hint:"Emergency mode gives you a root shell with / mounted read-only. The journal from this boot is still available.",
+     sol:["systemctl --failed","journalctl -xb | tail -40","journalctl -p err -b --no-pager","systemctl status local-fs.target --no-pager"],
+     check:"You can name the failing mount unit (e.g. data.mount)"},
+    {q:"Repair the fstab entry: remount the root filesystem writable, edit the file, validate it, and continue the boot without a full reboot.",
+     hint:"mount -o remount,rw / makes / writable. findmnt --verify validates fstab. systemctl default resumes the boot.",
+     sol:["mount -o remount,rw /","vi /etc/fstab        # remove or fix the bad line","findmnt --verify --verbose","mount -a && echo FSTAB OK","systemctl daemon-reload","systemctl default"],
+     check:"The boot continues to a normal login prompt"},
+    {q:"Now reset the root password from the bootloader, with no existing credentials. Do the full sequence including the SELinux step.",
+     hint:"Interrupt GRUB, append rd.break to the kernel line, then in the initramfs shell: remount /sysroot rw, chroot, passwd, and mark the filesystem for relabel before exiting.",
+     sol:["# 1. At the GRUB menu press e on the target entry","# 2. On the line starting with linux, append:   rd.break","# 3. Press Ctrl-x to boot","mount -o remount,rw /sysroot","chroot /sysroot","passwd root","touch /.autorelabel","exit","exit          # the system relabels and reboots"],
+     check:"After the relabel reboot you can log in as root with the new password"},
+    {q:"Explain and demonstrate the alternative path: booting straight into a shell with init=/bin/bash, and why rd.break plus autorelabel is the safer choice.",
+     hint:"init=/bin/bash bypasses systemd entirely, so nothing is mounted for you and SELinux is not relabelled - a password file written without the right context can block login.",
+     sol:["# GRUB line:  ...  rw init=/bin/bash","# then inside:","mount -o remount,rw /","passwd root","touch /.autorelabel","exec /usr/lib/systemd/systemd      # or: /sbin/reboot -f"],
+     check:"You can state what breaks if you skip /.autorelabel"},
+    {q:"Change what the system boots into by default, and switch to a different target live without rebooting.",
+     hint:"get-default, set-default, isolate. Targets are the modern runlevels.",
+     sol:["systemctl get-default","sudo systemctl set-default multi-user.target","systemctl get-default","sudo systemctl isolate graphical.target    # live switch, if installed","sudo systemctl set-default graphical.target"],
+     check:"get-default reports the target you set, and the symlink under /etc/systemd/system reflects it"},
+    {q:"Boot once into rescue mode and once into emergency mode deliberately, and state the difference.",
+     hint:"rescue mounts local filesystems and starts a minimal set of units; emergency mounts only / read-only and starts almost nothing. Both can be requested as kernel arguments or as systemctl targets.",
+     sol:["sudo systemctl rescue","# or append to the GRUB kernel line:  systemd.unit=rescue.target","sudo systemctl emergency","# or:  systemd.unit=emergency.target","systemctl list-units --type=target --no-pager"],
+     check:"In emergency mode df shows only / and it is read-only"},
+    {q:"Add a kernel command-line parameter permanently and regenerate the bootloader configuration correctly.",
+     hint:"grubby is the supported tool on RHEL; GRUB_CMDLINE_LINUX in /etc/default/grub plus grub2-mkconfig is the underlying mechanism. The output path differs between BIOS and UEFI.",
+     sol:["sudo grubby --info=ALL | head -20","sudo grubby --update-kernel=ALL --args='audit=1'","sudo grubby --info=DEFAULT | grep args","# underlying method:","sudo vi /etc/default/grub      # edit GRUB_CMDLINE_LINUX","sudo grub2-mkconfig -o /boot/grub2/grub.cfg        # BIOS","sudo grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg  # UEFI","cat /proc/cmdline"],
+     check:"After a reboot the parameter appears in /proc/cmdline"},
+    {q:"Show how to boot a previous kernel when a new one breaks the system, and how to make that choice permanent.",
+     hint:"The GRUB menu lists installed kernels; grubby --set-default makes it stick. Installed kernels are listed by rpm.",
+     sol:["rpm -q kernel","sudo grubby --default-kernel","sudo grubby --set-default=/boot/vmlinuz-<older-version>","sudo grubby --default-kernel","uname -r","# keep more kernels around:  installonly_limit in /etc/dnf/dnf.conf"],
+     check:"grubby --default-kernel reports the kernel you selected"}
+  ],
+  distro:[
+    ["RHEL 10","Secure Boot requires a signed shim on x86_64 and aarch64 - if Secure Boot is enforced and the shim is missing, RHEL 10 will not boot at all. The password reset flow is unchanged from RHEL 9."],
+    ["RHEL 9","Identical rd.break flow; grubby is present in both."],
+    ["Fedora 42","Same flow and same grub2-mkconfig paths (/boot/efi/EFI/fedora/grub.cfg for UEFI). Fedora uses BLS entries under /boot/loader/entries - edit those rather than grub.cfg directly."],
+    ["Ubuntu 24.04","No grubby. Use /etc/default/grub plus sudo update-grub (a wrapper for grub-mkconfig -o /boot/grub/grub.cfg). Recovery mode is a menu entry under Advanced options; the equivalent of rd.break is appending init=/bin/bash or using the recovery menus root shell. No SELinux relabel step is needed."]
+  ],
+  practice:"Snapshot before you practise, and practise until you can do the rd.break sequence without notes. Teams that require console access (iDRAC, iLO, vCenter console) before any storage or network change do so precisely because this scenario is the recovery path when the change goes wrong.",
+  docs:["Red Hat: Managing, monitoring, and updating the kernel (RHEL 10) / Configuring basic system settings - Working with GRUB","man 8 grubby, man 1 systemctl (isolate, set-default, rescue, emergency), man 7 bootup, man 7 kernel-command-line"]
+},
+{
+  id:"s20", level:"Capstone", mins:120, map:"RH124 + RH134 end to end, RH134 ch12",
+  title:"Capstone: ship a containerised application the way production does",
+  role:"Build a complete service on one clean host: a dedicated service account, a dedicated storage volume, a rootless container running a web application, started at boot without a login session, reachable through the firewall, backed up on a timer, and logged to the journal.",
+  brief:"This is the exam in one exercise. Every scenario before this one contributes a piece. Do it without looking at the earlier answers - that is the point.",
+  setup:["# start from a clean VM snapshot","sudo dnf install -y podman","podman --version"],
+  tasks:[
+    {q:"Create the service account appsvc with no login shell, a home under /var/lib/appsvc, and the ability to run containers while not logged in.",
+     hint:"Rootless containers need subordinate UID/GID ranges and lingering enabled so the user manager starts at boot.",
+     sol:["sudo useradd -r -m -d /var/lib/appsvc -s /sbin/nologin appsvc","sudo grep appsvc /etc/subuid /etc/subgid || sudo usermod --add-subuids 200000-265535 --add-subgids 200000-265535 appsvc","sudo loginctl enable-linger appsvc","loginctl show-user appsvc | grep Linger","sudo -u appsvc -H bash -c 'podman info --format {{.Host.Security.Rootless}}'"],
+     check:"Linger=yes and podman reports rootless true"},
+    {q:"Create a dedicated LVM volume of 2 GiB mounted at /var/lib/appsvc/data, owned by the service account, persistent in fstab.",
+     hint:"You already know this sequence: pvcreate, vgcreate, lvcreate, mkfs, fstab by UUID, mount -a. Ownership after mounting, not before.",
+     sol:["sudo pvcreate /dev/sdb && sudo vgcreate vg_app /dev/sdb","sudo lvcreate -n lv_appdata -L 2G vg_app","sudo mkfs.xfs /dev/vg_app/lv_appdata","sudo install -d /var/lib/appsvc/data","echo \"UUID=$(sudo blkid -s UUID -o value /dev/vg_app/lv_appdata) /var/lib/appsvc/data xfs defaults 0 0\" | sudo tee -a /etc/fstab","sudo mount -a && sudo chown -R appsvc:appsvc /var/lib/appsvc/data","df -hT /var/lib/appsvc/data"],
+     check:"df shows the volume mounted and owned by appsvc"},
+    {q:"Run a rootless container serving content from that volume on host port 8080, as the appsvc user, with the correct SELinux volume flag.",
+     hint:"Rootless containers cannot bind ports below 1024. The :Z suffix on a volume relabels it for container access.",
+     sol:["echo '<h1>capstone</h1>' | sudo tee /var/lib/appsvc/data/index.html","sudo chown appsvc:appsvc /var/lib/appsvc/data/index.html","sudo -u appsvc -H podman run -d --name web -p 8080:8080 \\","  -v /var/lib/appsvc/data:/var/www/html:Z \\","  registry.access.redhat.com/ubi9/httpd-24","sudo -u appsvc -H podman ps","curl -s http://localhost:8080/ | head"],
+     check:"curl returns the index.html content"},
+    {q:"Make the container start at boot as a systemd user service, surviving reboot without anyone logging in - and verify after an actual reboot.",
+     hint:"Podman generates the unit for you. The modern form is a Quadlet .container file in ~/.config/containers/systemd/; the older form is podman generate systemd --new.",
+     sol:["sudo -u appsvc -H mkdir -p /var/lib/appsvc/.config/containers/systemd","sudo -u appsvc -H tee /var/lib/appsvc/.config/containers/systemd/web.container > /dev/null << 'EOS'","[Unit]","Description=Capstone web container","[Container]","Image=registry.access.redhat.com/ubi9/httpd-24","PublishPort=8080:8080","Volume=/var/lib/appsvc/data:/var/www/html:Z","[Install]","WantedBy=default.target","EOS","sudo -u appsvc -H XDG_RUNTIME_DIR=/run/user/$(id -u appsvc) systemctl --user daemon-reload","sudo -u appsvc -H XDG_RUNTIME_DIR=/run/user/$(id -u appsvc) systemctl --user start web.service","sudo reboot   # then re-check","curl -s http://localhost:8080/ | head"],
+     check:"After a full reboot, curl to port 8080 still works with nobody logged in"},
+    {q:"Expose it properly: open 8080 in the firewall for the internal subnet only, and confirm from both an allowed and a denied source perspective.",
+     hint:"Zone with a source, as in the firewall drill - not a blanket port in public.",
+     sol:["sudo firewall-cmd --permanent --zone=internal --add-source=10.10.0.0/24","sudo firewall-cmd --permanent --zone=internal --add-port=8080/tcp","sudo firewall-cmd --reload","sudo firewall-cmd --zone=internal --list-all","sudo ss -tlnp | grep 8080"],
+     check:"The internal zone lists both the source and the port"},
+    {q:"Add a nightly backup: a timer that archives the data volume to /srv/backup with a dated filename, keeps seven generations, and logs its result.",
+     hint:"A oneshot service plus a timer. Use tar with a date-stamped name and find -delete for retention.",
+     sol:["sudo install -d /srv/backup","sudo tee /usr/local/bin/appbackup.sh > /dev/null << 'EOS'","#!/usr/bin/env bash","set -euo pipefail","dest=/srv/backup","tar -czf \"$dest/appdata-$(date +%F).tar.gz\" -C /var/lib/appsvc data","find \"$dest\" -name 'appdata-*.tar.gz' -mtime +7 -delete","echo \"backup complete: $(ls -1 $dest | wc -l) archives retained\"","EOS","sudo chmod 0755 /usr/local/bin/appbackup.sh","sudo tee /etc/systemd/system/appbackup.service > /dev/null << 'EOS'","[Unit]","Description=Nightly app data backup","[Service]","Type=oneshot","ExecStart=/usr/local/bin/appbackup.sh","EOS","sudo tee /etc/systemd/system/appbackup.timer > /dev/null << 'EOS'","[Timer]","OnCalendar=*-*-* 01:30:00","Persistent=true","[Install]","WantedBy=timers.target","EOS","sudo systemctl daemon-reload && sudo systemctl enable --now appbackup.timer","sudo systemctl start appbackup.service","sudo journalctl -u appbackup.service --no-pager | tail -3"],
+     check:"An archive exists in /srv/backup and the journal records the completion line"},
+    {q:"Prove the SELinux story: show the container process type, the volume context, and that enforcing mode is untouched.",
+     hint:"ps -Z on the container process, ls -Zd on the volume, getenforce for the mode. The :Z flag should have applied container_file_t.",
+     sol:["getenforce","ls -Zd /var/lib/appsvc/data","sudo -u appsvc -H podman inspect web --format '{{.MountLabel}}' 2>/dev/null","ps -eZ | grep -i container | head","sudo ausearch -m AVC -ts today | tail -5   # expect none"],
+     check:"The volume carries container_file_t and no AVC denials were generated"},
+    {q:"Write the handover document: one file recording every decision, the exact commands to rebuild the service, and how to verify it is healthy.",
+     hint:"This is the deliverable a real team judges you on. Structure it: purpose, accounts, storage, service, network, backup, verification.",
+     sol:["sudo tee /srv/HANDOVER.md > /dev/null << 'EOS'","# Capstone service - handover","## Accounts","appsvc (system, nologin, lingering enabled, subuid/subgid allocated)","## Storage","vg_app/lv_appdata -> /var/lib/appsvc/data (xfs, fstab by UUID)","## Service","Quadlet: /var/lib/appsvc/.config/containers/systemd/web.container","## Network","firewalld zone internal: source 10.10.0.0/24, port 8080/tcp","## Backup","appbackup.timer 01:30 daily -> /srv/backup, 7 day retention","## Verify","curl -s http://localhost:8080/ | head -1","systemctl --user -M appsvc@ status web.service","systemctl status appbackup.timer","EOS","cat /srv/HANDOVER.md"],
+     check:"Another engineer could rebuild the service from your file alone"},
+    {q:"Final check: run one command sequence that proves every layer is healthy, and one that proves it survives a reboot.",
+     hint:"Health means: mount present, container running, port listening, firewall rule live, timer scheduled, no failed units.",
+     sol:["findmnt /var/lib/appsvc/data","sudo -u appsvc -H podman ps --format '{{.Names}} {{.Status}}'","sudo ss -tlnp | grep 8080","sudo firewall-cmd --zone=internal --list-all","systemctl list-timers --all | grep appbackup","systemctl --failed","sudo reboot && sleep 60 && curl -sI http://localhost:8080/ | head -1"],
+     check:"systemctl --failed is empty and every layer reports healthy after reboot"}
+  ],
+  distro:[
+    ["RHEL 10","runc was REMOVED - crun is the only runtime. CNI is gone; netavark is the network backend. slirp4netns is deprecated in favour of pasta for rootless networking. cgroups v1 for rootless containers is deprecated. Quadlet is the supported way to run containers under systemd."],
+    ["RHEL 9","runc and CNI still available; podman generate systemd --new is the documented method, though Quadlet also works from Podman 4.4."],
+    ["Fedora 42","Same as RHEL 10 - crun, netavark, Quadlet. The most current place to practise container work."],
+    ["Ubuntu 24.04","podman is available (apt install podman) with the same commands, but no SELinux, so the :Z volume flag is a no-op. Rootless subuid/subgid ranges are allocated automatically by useradd on Ubuntu. Docker is more common there; the systemd integration story is weaker."]
+  ],
+  practice:"Rootless containers, a lingering service account, Quadlet units, a dedicated data volume and a backup timer - that is a production deployment pattern, not an exercise. The handover document is not optional: in real teams the artefact is judged, not the shell history.",
+  docs:["Red Hat: Building, running, and managing containers (RHEL 10)","Red Hat: Considerations in adopting RHEL 10 - Containers (crun, netavark, pasta)","man 1 podman-run, man 5 quadlet, man 1 loginctl, man 5 subuid"]
+}
+];
+
+const PLAN = [
+  {d:"Day 1", t:"Files, users, permissions", s:["s01","s02","s03","s04"],
+   note:"The widest-scoring block. If you only get through one day, make it this one."},
+  {d:"Day 2", t:"Processes, services, logs, SSH", s:["s05","s07","s06","s08"],
+   note:"systemctl and journalctl appear inside every other scenario. Drill the loop until it is reflex."},
+  {d:"Day 3", t:"Network, firewall, packages", s:["s09","s10","s11","s12"],
+   note:"Do scenario 9 on a VM with two NICs so you can renumber one safely."},
+  {d:"Day 4", t:"Storage", s:["s13","s14","s15"],
+   note:"Snapshot the VM before each one. Storage mistakes are the ones that cost you the machine."},
+  {d:"Day 5", t:"Automation, SELinux, boot, capstone", s:["s16","s17","s18","s19","s20"],
+   note:"Scenario 19 needs a snapshot and console access. Scenario 20 is the rehearsal for the real thing."}
+];
+
+const INDEX = [
+  ["Shell and files","ls -lZi, cd, pwd, touch, mkdir -p, install -d -m, cp -a, mv, rm -f --, ln, ln -s, stat, file, tree, du -sh, df -hTi, find, xargs -0, tar, gzip, rsync -aAX, less, head, tail -f, wc, sort -h, uniq -c, cut, tr, sed, awk, grep -E, diff, tee, mktemp","s01 s02 s17"],
+  ["Help","man, man -k, apropos, mandb, info, --help, /usr/share/doc, sos report","s01"],
+  ["Users and groups","useradd, usermod, userdel -r, groupadd, groupmod, gpasswd, passwd, passwd -l/-S, chage, id, getent, su -, sudo, visudo -cf, /etc/sudoers.d","s03"],
+  ["Permissions","chmod, chown, chgrp, umask, setgid, sticky bit, setfacl, getfacl, default ACLs, ACL mask, find -perm","s04"],
+  ["Processes","ps -eo, ps --forest, pstree, top, uptime, free, vmstat, kill, killall, pkill, pgrep, jobs, bg, fg, nohup, disown, nice, renice, lsof, fuser, systemd-run, systemd-cgtop","s05"],
+  ["Services","systemctl start/stop/restart/reload, enable --now, disable, mask, status, is-active, is-enabled, cat, edit, show, daemon-reload, list-units, list-dependencies, get-default, set-default, isolate","s07 s19"],
+  ["SSH","ssh, ssh -J, ssh -G, ssh-keygen, ssh-copy-id, sshd -t, sshd -T, scp, sftp, rsync -e ssh, ~/.ssh/config, sshd_config.d","s06"],
+  ["Logs and time","journalctl (-u -b -p -k -f -x --since --until --grep -o verbose --list-boots --disk-usage --vacuum-*), journald.conf, rsyslog.d, logger, logrotate, dmesg -T, last, lastb, timedatectl, chronyc","s08"],
+  ["Network","nmcli connection/device, ip addr/route/link, ss -tulpn, hostnamectl, resolvectl, dig, host, ping, tracepath, /etc/hosts, /etc/nsswitch.conf, netplan (Ubuntu)","s09"],
+  ["Firewall","firewall-cmd (--permanent --reload --list-all --add-service --add-port --add-source --add-rich-rule --add-masquerade --add-forward-port --panic-on), nft list ruleset, ufw (Ubuntu)","s10"],
+  ["Packages","dnf install/remove/update/search/info/provides/repolist/history/list, dnf --security, dnf download, dnf config-manager, dnf versionlock, needs-restarting, rpm -qa/-qi/-ql/-qf/-qp/-V/-K, createrepo_c, apt (Ubuntu)","s11 s12"],
+  ["Storage","lsblk -f, blkid, parted, fdisk, partprobe, wipefs, mkfs.xfs, mkfs.ext4, xfs_info, xfs_growfs, resize2fs, mount, umount, findmnt --verify, /etc/fstab, mkswap, swapon --show, fallocate","s13"],
+  ["LVM","pvcreate, pvs, pvdisplay, vgcreate, vgextend, vgs, vgdisplay, lvcreate, lvcreate -s, lvextend -r, lvconvert --merge, lvremove, vgremove, pvremove, lvchange, vgcfgbackup","s14"],
+  ["Network storage","exportfs -rav, /etc/exports, showmount -e, mount -t nfs, _netdev, autofs, auto.master.d, rpcinfo","s15"],
+  ["Scheduling","crontab -e/-l, /etc/cron.d, /etc/crontab, cron.allow, at, atq, atrm, systemd .timer, OnCalendar, systemd-analyze calendar, systemctl list-timers, systemd-tmpfiles","s16"],
+  ["Scripting","set -euo pipefail, positional parameters, [[ ]], (( )), for/while/case, functions, exit codes, trap, mktemp, flock, command substitution, quoting, bash -n, bash -x","s17"],
+  ["SELinux","getenforce, sestatus, setenforce, /etc/selinux/config, ls -Z, ps -Z, chcon, restorecon -Rv, semanage fcontext/port/boolean, getsebool, setsebool -P, ausearch, audit2why, audit2allow, /.autorelabel","s18"],
+  ["Boot","GRUB edit, rd.break, init=/bin/bash, chroot /sysroot, grubby, grub2-mkconfig, /etc/default/grub, /proc/cmdline, rescue.target, emergency.target","s19"],
+  ["Containers","podman run/ps/inspect/logs/exec/stop/rm, rootless, -v :Z, -p, loginctl enable-linger, subuid/subgid, Quadlet .container, systemctl --user","s20"]
+];
+
+const LAB = [
+  {h:"What you need",b:"Two virtual machines are enough: one Fedora (closest free stand-in for RHEL - same SELinux targeted policy, same firewalld, same nmcli, same systemd) and one Ubuntu 24.04 LTS to feel the differences. VirtualBox on your Windows laptop is fine; so is an Oracle Cloud Always Free ARM instance for the Ubuntu side."},
+  {h:"Non-negotiable: snapshots",b:"Take a snapshot named clean before each scenario and roll back afterwards. Scenarios 13, 14, 19 and 20 all modify fstab, partitions or the bootloader. Without a snapshot you will lose a morning rebuilding instead of practising."},
+  {h:"Extra disks",b:"Scenarios 13, 14 and 20 need spare block devices. In VirtualBox: Settings > Storage > Controller SATA > Add Hard Disk > Create, 5 GB dynamically allocated, three of them. They appear as /dev/sdb, /dev/sdc, /dev/sdd. Verify with lsblk before you touch anything - never assume the letter."},
+  {h:"Second network interface",b:"Scenario 9 renumbers an interface. Add a second adapter (Host-only or Internal Network) so your SSH session lives on the first one and you experiment on the second. This is also how the real rule works: never renumber the link you are connected through."},
+  {h:"Console access",b:"Scenario 19 requires the VM console window, not SSH. If you are on a cloud instance instead, you cannot do the GRUB drill there - use a local VM."},
+  {h:"Two terminals, always",b:"Keep a second SSH session or console open for every scenario that touches sshd, firewalld or the network. It costs nothing and it is the difference between a mistake and a rebuild."},
+  {h:"How to use a scenario",b:"Read the brief, run the setup block, then work the tasks from the prompt alone. Only open Show hint when you are genuinely stuck, and only open Show commands after you have attempted it - opening the answer first turns this into a tutorial, which is exactly the failure mode you are trying to escape. Run the check line to confirm before ticking the box."},
+  {h:"Second pass",b:"After a scenario is complete, reset the VM to clean and redo it from the task prompts with every solution closed. The second pass is where it moves into memory. Aim to redo Day 1 and Day 2 blocks once more before the exam."},
+  {h:"Where progress is stored",b:"Ticks are saved in your browsers local storage for whatever URL this page is served from - the same file on GitHub Pages and on file:// are separate stores. Export progress writes a JSON file you can keep in the repo; Reset all clears the current store."}
+];
+
+const LS_KEY = "linux-drill-lab.v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch (e) { state = {}; }
+function save(){ try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){} }
+
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const block = lines => "<pre class=\"term\">" + lines.map(l =>
+  l.trim().startsWith("#") ? "<span class=\"c\">" + esc(l) + "</span>" : esc(l)).join("\n") + "</pre>";
+
+function totalTasks(){ return SCENARIOS.reduce((n,s)=>n+s.tasks.length,0); }
+function doneCount(sc){ return sc.tasks.filter((_,i)=>state[sc.id+":"+i]).length; }
+
+function renderTOC(){
+  document.getElementById("toc").innerHTML = SCENARIOS.map((sc,i)=>{
+    const d = doneCount(sc), n = sc.tasks.length;
+    return "<li><a href=\"#"+sc.id+"\" id=\"toc-"+sc.id+"\" class=\""+(d===n?"done":"")+"\">"+
+      "<span class=\"n\">"+String(i+1).padStart(2,"0")+"</span>"+
+      "<span>"+esc(sc.title)+"</span>"+
+      "<span class=\"pct\">"+d+"/"+n+"</span></a></li>";
+  }).join("");
+}
+
+function renderProgress(){
+  const done = SCENARIOS.reduce((n,s)=>n+doneCount(s),0), tot = totalTasks();
+  document.getElementById("pctbar").style.width = (tot? (done/tot*100):0).toFixed(1)+"%";
+  document.getElementById("pcttext").textContent = done+" of "+tot+" steps";
+  SCENARIOS.forEach(sc=>{
+    const a = document.getElementById("toc-"+sc.id); if(!a) return;
+    const d = doneCount(sc), n = sc.tasks.length;
+    a.classList.toggle("done", d===n);
+    a.lastElementChild.textContent = d+"/"+n;
+  });
+}
+
+function renderScenarios(){
+  document.getElementById("scenarios").innerHTML = SCENARIOS.map((sc,idx)=>{
+    const tasks = sc.tasks.map((t,i)=>{
+      const key = sc.id+":"+i, on = !!state[key];
+      return "<li><input type=\"checkbox\" data-key=\""+key+"\" "+(on?"checked":"")+" aria-label=\"mark step "+(i+1)+" done\">"+
+        "<div class=\"tbody"+(on?" done":"")+"\" id=\"tb-"+key+"\">"+
+          "<div class=\"q\">"+esc(t.q)+"</div>"+
+          "<details><summary>Show hint</summary><div class=\"hintbox\">"+esc(t.hint)+"</div></details>"+
+          "<details class=\"sol\"><summary>Show commands</summary><div>"+block(t.sol)+
+            "<div class=\"check\"><b>Check:</b> "+esc(t.check)+"</div></div></details>"+
+        "</div></li>";
+    }).join("");
+    const distro = sc.distro.map(d=>"<tr><th>"+esc(d[0])+"</th><td>"+esc(d[1])+"</td></tr>").join("");
+    return "<article class=\"sc level-"+sc.level+"\" id=\""+sc.id+"\">"+
+      "<h2>"+String(idx+1).padStart(2,"0")+" &nbsp;"+esc(sc.title)+"</h2>"+
+      "<p class=\"role\">"+esc(sc.role)+"</p>"+
+      "<div class=\"facts\"><span><b>"+esc(sc.level)+"</b></span><span>about <b>"+sc.mins+"</b> min</span>"+
+        "<span>syllabus: <b>"+esc(sc.map)+"</b></span><span>steps: <b>"+sc.tasks.length+"</b></span></div>"+
+      "<p class=\"brief\">"+esc(sc.brief)+"</p>"+
+      "<h4 class=\"sec\">Set up the situation</h4>"+block(sc.setup)+
+      "<h4 class=\"sec\">Tasks</h4><ol class=\"tasks\">"+tasks+"</ol>"+
+      "<h4 class=\"sec\">Distribution differences</h4><table class=\"distro\">"+distro+"</table>"+
+      "<h4 class=\"sec\">Why it is done this way</h4><p class=\"practice\">"+esc(sc.practice)+"</p>"+
+      "<h4 class=\"sec\">Documentation</h4><ul class=\"docs\">"+sc.docs.map(d=>"<li>"+esc(d)+"</li>").join("")+"</ul>"+
+      "</article>";
+  }).join("");
+}
+
+function renderPlan(){
+  const byId = Object.fromEntries(SCENARIOS.map(s=>[s.id,s]));
+  document.getElementById("view-plan").innerHTML =
+    "<p class=\"note\" style=\"margin-bottom:18px\">Five working days, about three hours each. Every day ends with the same discipline: roll the VM back to the clean snapshot, then redo one scenario from the prompts with all solutions closed.</p>"+
+    "<div class=\"plan\">"+PLAN.map(p=>
+      "<div class=\"day\"><h3>"+esc(p.d)+"</h3><p>"+esc(p.t)+"</p><ul>"+
+      p.s.map(id=>"<li><a href=\"#"+id+"\" data-jump=\""+id+"\">"+esc(byId[id].title)+"</a> <span class=\"pct\">"+byId[id].mins+"m</span></li>").join("")+
+      "</ul><p style=\"margin-top:10px\">"+esc(p.note)+"</p></div>").join("")+"</div>"+
+    "<h4 class=\"sec\" style=\"margin-top:26px\">If you have less time than that</h4>"+
+    "<p class=\"note\">Priority order for a short run: 3, 4 (users and permissions), 7 (services), 13 (fstab), 10 (firewall), 18 (SELinux), 19 (boot recovery). Those seven carry the most marks per hour in any RHCSA-shaped assessment, and they are also what a Linux screening test tends to probe.</p>";
+}
+
+function renderIndex(){
+  document.getElementById("view-index").innerHTML =
+    "<p class=\"note\" style=\"margin-bottom:16px\">Every command these scenarios exercise, grouped by domain. If a line here is unfamiliar, the scenario listed against it is where you meet it in context.</p>"+
+    "<dl class=\"idx\">"+INDEX.map(g=>
+      "<dt>"+esc(g[0])+" <span class=\"pct\">"+esc(g[2])+"</span></dt><dd>"+esc(g[1])+"</dd>").join("")+"</dl>";
+}
+
+function renderLab(){
+  document.getElementById("view-lab").innerHTML =
+    LAB.map(l=>"<h4 class=\"sec\">"+esc(l.h)+"</h4><p class=\"note\">"+esc(l.b)+"</p>").join("");
+}
+
+document.addEventListener("change", e=>{
+  const cb = e.target.closest("input[type=checkbox][data-key]"); if(!cb) return;
+  const k = cb.dataset.key;
+  if(cb.checked) state[k]=1; else delete state[k];
+  const tb = document.getElementById("tb-"+k); if(tb) tb.classList.toggle("done", cb.checked);
+  save(); renderProgress();
+});
+
+document.querySelectorAll("nav.tabs button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", String(b===btn)));
+    ["scenarios","plan","index","lab"].forEach(v=>{
+      document.getElementById("view-"+v).hidden = (v !== btn.dataset.view);
+    });
+    window.scrollTo({top:0});
+  });
+});
+
+document.addEventListener("click", e=>{
+  const j = e.target.closest("[data-jump]"); if(!j) return;
+  document.getElementById("tab-scenarios").click();
+  setTimeout(()=>document.getElementById(j.dataset.jump).scrollIntoView(), 30);
+});
+
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(!confirm("Clear every tick on this device?")) return;
+  state = {}; save(); renderScenarios(); renderTOC(); renderProgress();
+});
+
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "linux-drill-progress-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click(); URL.revokeObjectURL(a.href);
+});
+
+renderScenarios(); renderTOC(); renderProgress(); renderPlan(); renderIndex(); renderLab();
+</script>
+</body>
+</html>
